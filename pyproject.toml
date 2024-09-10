@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "keallm"
+version = "0.1.0"
+description = "Knowledge Embedding Augmented Large Language Model"
+authors = ["Your Name <your.email@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+torch = "^2.1.0"
+transformers = "^4.21.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+keallm = "keallm.main:main" 
