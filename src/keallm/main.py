@@ -1,6 +1,6 @@
 import argparse
 import logging
-
+import os
 from transformers import BertModel, BertTokenizer, AutoModelForCausalLM
 
 from .data_processing import create_projector_dataset
@@ -185,9 +185,11 @@ def main():
 
     elif args.command == "inference":
         kg_embedding_model = KGembeddingModel(BertModel.from_pretrained("bert-base-uncased"), tokenizer)
-        kg_embedding_model.load_state_dict(torch.load(args.kg_embedding_path))
+        if os.path.exists(args.kg_embedding_path):
+            kg_embedding_model.load_state_dict(torch.load(args.kg_embedding_path))
         model = KEALLM(llama_model, kg_embedding_model.bert_model.config.hidden_size, llama_model.config.hidden_size)
-        model.load_state_dict(torch.load(args.model_path))
+        if os.path.exists(args.model_path):
+            model.load_state_dict(torch.load(args.model_path))
         answer = answer_question(
             model,
             kg_embedding_model,
