@@ -18,6 +18,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Knowledge Embedding Augmented Large Language Model"
     )
+    parser.add_argument("--model_name_or_path", type=str, default="meta-llama/Llama-2-7b-chat-hf", help="Path to LLM model")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Train KG Embedding command
@@ -136,7 +137,7 @@ def main():
     args = parser.parse_args()
 
     tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-    llama_model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-chat-hf")
+    llama_model = AutoModelForCausalLM.from_pretrained(args.model_name_or_path)
 
     if args.command == "train_kg":
         bert_model = BertModel.from_pretrained("bert-base-uncased")
