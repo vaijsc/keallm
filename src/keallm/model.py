@@ -17,6 +17,7 @@ class KEALLM(nn.Module):
         self.projector = nn.Linear(kg_embedding_dim, llama_embedding_dim)
         self.llama_tokenizer.add_tokens(["<KG>"])
         self.kg_token_id = self.llama_tokenizer.convert_tokens_to_ids("<KG>")
+        self.llama_model.resize_token_embeddings(len(self.llama_tokenizer))
 
     def forward(
         self,
