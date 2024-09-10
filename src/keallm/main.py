@@ -96,12 +96,13 @@ def main():
     # Inference command
     inference_parser = subparsers.add_parser("inference", help="Answer a question")
     inference_parser.add_argument(
-        "--model_path", type=str, required=False, help="Path to trained KEALLM model"
+        "--model_path", type=str, required=False, default="", help="Path to trained KEALLM model"
     )
     inference_parser.add_argument(
         "--kg_embedding_path",
         type=str,
         required=False,
+        default="",
         help="Path to trained KG embedding model",
     )
     inference_parser.add_argument(
