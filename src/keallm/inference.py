@@ -2,14 +2,14 @@ import argparse
 from typing import Dict
 
 import torch
-from transformers import BertTokenizer, LlamaForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 from .model import KEALLM, KGembeddingModel
 
 def answer_question(
     model: KEALLM,
     kg_embedding_model: KGembeddingModel,
-    tokenizer: BertTokenizer,
+    tokenizer: AutoTokenizer,
     query: str,
     head: str,
     relation: str,

@@ -1,7 +1,7 @@
 import argparse
 import logging
 import os
-from transformers import BertModel, BertTokenizer, AutoModelForCausalLM
+from transformers import BertModel, BertTokenizer, AutoTokenizer, AutoModelForCausalLM
 
 from .data_processing import create_projector_dataset
 from .model import KEALLM, KGembeddingModel
@@ -138,6 +138,7 @@ def main():
     args = parser.parse_args()
 
     tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+    llama_tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path)
     llama_model = AutoModelForCausalLM.from_pretrained(args.model_name_or_path)
 
     if args.command == "train_kg":
@@ -188,7 +189,7 @@ def main():
         kg_embedding_model = KGembeddingModel(BertModel.from_pretrained("bert-base-uncased"), tokenizer)
         if os.path.exists(args.kg_embedding_path):
             kg_embedding_model.load_state_dict(torch.load(args.kg_embedding_path))
-        model = KEALLM(llama_model, kg_embedding_model.bert_model.config.hidden_size, llama_model.config.hidden_size)
+        model = KEALLM(llama_model, llama_tokenizer, kg_embedding_model.bert_model.config.hidden_size, llama_model.config.hidden_size)
         if os.path.exists(args.model_path):
             model.load_state_dict(torch.load(args.model_path))
         answer = answer_question(

@@ -1,19 +1,21 @@
 from typing import Tuple
 import torch
 from torch import nn
-from transformers import BertModel, BertTokenizer, LlamaForCausalLM
+from transformers import BertModel, BertTokenizer, AutoModelForCausalLM, AutoTokenizer
 
 class KEALLM(nn.Module):
     def __init__(
         self,
-        llama_model: LlamaForCausalLM,
+        llama_model: AutoModelForCausalLM,
+        llama_tokenizer: AutoTokenizer,
         kg_embedding_dim: int,
         llama_embedding_dim: int,
     ):
         super().__init__()
         self.llama_model = llama_model
+        self.llama_tokenizer = llama_tokenizer
         self.projector = nn.Linear(kg_embedding_dim, llama_embedding_dim)
-        self.kg_token_id = self.llama_model.tokenizer.add_special_tokens({"additional_special_tokens": ["<KG>"]})["additional_special_tokens_ids"][0]
+        self.kg_token_id = self.llama_tokenizer.add_special_tokens({"additional_special_tokens": ["<KG>"]})["additional_special_tokens_ids"][0]
 
     def forward(
         self,
