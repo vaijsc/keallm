@@ -1,0 +1,9 @@
+0	directed by
+1	written by
+2	starred actors
+3	release year
+4	in language
+5	has tags
+6	has genre
+7	has imdb votes
+8	has imdb rating

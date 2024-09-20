@@ -1,0 +1,8 @@
+{"question": "what genres do the films starred by [John Carter] fall under", "triples": [{"h": "John Carter", "r": "has_genre", "t": "Action"}]}
+{"question": "who are the actors of the screenwriter [Antwone Fisher]", "triples": [{"h": "Antwone Fisher", "r": "directed_by", "t": "Derek Luke"}, {"h": "Antwone Fisher", "r": "directed_by", "t": "Denzel Washington"}]}
+{"question": "the movies starred by [Ulla Jacobsson] were in which languages", "triples": [{"h": "Ulla Jacobsson", "r": "starred_actors [inverse]", "t": "Zulu"}, {"h": "Ulla Jacobsson", "r": "starred_actors [inverse]", "t": "English"}]}
+{"question": "the films acted by [Patrick Dempsey] were written by who", "triples": [{"h": "Patrick Dempsey", "r": "starred_actors [inverse]", "t": "Erin Gruwell"}, {"h": "Patrick Dempsey", "r": "starred_actors [inverse]", "t": "Bill Kelly"}, {"h": "Patrick Dempsey", "r": "starred_actors [inverse]", "t": "Freedom Writers"}]}
+{"question": "what are the main languages in [Alrick Brown] written films", "triples": [{"h": "Alrick Brown", "r": "directed_by [inverse]", "t": "Kinyarwanda"}]}
+{"question": "what languages are the movies written by [John Prebble] in", "triples": [{"h": "John Prebble", "r": "written_by [inverse]", "t": "Zulu"}, {"h": "John Prebble", "r": "written_by [inverse]", "t": "English"}]}
+{"question": "what are the primary languages in the movies written by [Cy Endfield]", "triples": [{"h": "Cy Endfield", "r": "directed_by [inverse]", "t": "Zulu"}, {"h": "Cy Endfield", "r": "directed_by [inverse]", "t": "English"}]}
+{"question": "who co-wrote films with [Erin Gruwell]", "triples": [{"h": "Erin Gruwell", "r": "written_by [inverse]", "t": "Freedom Writers"}]}
