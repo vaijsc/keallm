@@ -144,6 +144,7 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
     def forward(
         self,
         kge_input_ids: torch.LongTensor,
+        input_ids: Optional[torch.FloatTensor] = None,
         attention_mask: Optional[torch.LongTensor] = None,
         decoder_input_ids: Optional[torch.LongTensor] = None,
         decoder_attention_mask: Optional[torch.LongTensor] = None,
