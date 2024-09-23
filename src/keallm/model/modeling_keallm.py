@@ -66,7 +66,7 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
         self.language_projection.bias.data.zero_()
         
         language_model = AutoModelForCausalLM.from_pretrained(
-            config.text_config._name_or_path, attn_implementation=config._attn_implementation
+            config.text_config._name_or_path
         )
         kg_embedding_model = AutoModelForTextEncoding.from_pretrained(config.kge_config._name_or_path)
         
