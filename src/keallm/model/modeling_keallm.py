@@ -144,10 +144,6 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
     def forward(
         self,
         kge_input_ids: torch.LongTensor,
-        pixel_values: torch.FloatTensor,
-        qformer_input_ids: torch.FloatTensor,
-        qformer_attention_mask: Optional[torch.LongTensor] = None,
-        input_ids: Optional[torch.FloatTensor] = None,
         attention_mask: Optional[torch.LongTensor] = None,
         decoder_input_ids: Optional[torch.LongTensor] = None,
         decoder_attention_mask: Optional[torch.LongTensor] = None,
@@ -155,7 +151,6 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
         output_hidden_states: Optional[bool] = None,
         labels: Optional[torch.LongTensor] = None,
         return_dict: Optional[bool] = None,
-        interpolate_pos_encoding: bool = False,
     ) -> Union[Tuple, KeallmForConditionalGenerationModelOutput]:
     
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
@@ -168,14 +163,18 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
         # difference with BLIP-2 here: we also feed the instruction prompt to the Q-Former
         query_tokens = self.query_tokens.expand(kge_w_embeds.shape[0], -1, -1)
         query_attention_mask = torch.ones(query_tokens.size()[:-1], dtype=torch.long, device=kge_embeds.device)
-
-        # step 2: forward the query tokens through the QFormer, using the image embeddings for cross-attention
         kge_attention_mask = torch.ones(kge_w_embeds.size()[:-1], dtype=torch.long, device=kge_embeds.device)
+
+        kge_embeds = torch.cat([query_tokens, kge_w_embeds.to(query_tokens.device)], dim=1)
+        # step 2: forward the query tokens through the QFormer, using the image embeddings for cross-attention
+        combined_query_kge_attention_mask = torch.cat(
+            [query_attention_mask, kge_attention_mask], dim=1
+        )
 
         
         query_outputs = self.kg_embedding_model(
-            inputs_embeds=kge_w_embeds,
-            attention_mask=kge_attention_mask,
+            inputs_embeds=kge_embeds,
+            attention_mask=combined_query_kge_attention_mask,
             output_attentions=output_attentions,
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
@@ -247,9 +246,7 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
     @torch.no_grad()
     def generate(
         self,
-        pixel_values: torch.FloatTensor,
-        qformer_input_ids: Optional[torch.LongTensor] = None,
-        qformer_attention_mask: Optional[torch.LongTensor] = None,
+        kge_input_ids: torch.LongTensor,
         input_ids: Optional[torch.LongTensor] = None,
         attention_mask: Optional[torch.LongTensor] = None,
         interpolate_pos_encoding: bool = False,
@@ -266,14 +263,18 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
         # difference with BLIP-2 here: we also feed the instruction prompt to the Q-Former
         query_tokens = self.query_tokens.expand(kge_w_embeds.shape[0], -1, -1)
         query_attention_mask = torch.ones(query_tokens.size()[:-1], dtype=torch.long, device=kge_embeds.device)
-
-        # step 2: forward the query tokens through the QFormer, using the image embeddings for cross-attention
         kge_attention_mask = torch.ones(kge_w_embeds.size()[:-1], dtype=torch.long, device=kge_embeds.device)
+
+        kge_embeds = torch.cat([query_tokens, kge_w_embeds.to(query_tokens.device)], dim=1)
+        # step 2: forward the query tokens through the QFormer, using the image embeddings for cross-attention
+        combined_query_kge_attention_mask = torch.cat(
+            [query_attention_mask, kge_attention_mask], dim=1
+        )
 
         
         query_outputs = self.kg_embedding_model(
-            inputs_embeds=kge_w_embeds,
-            attention_mask=kge_attention_mask,
+            inputs_embeds=kge_embeds,
+            attention_mask=combined_query_kge_attention_mask,
             output_attentions=output_attentions,
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
