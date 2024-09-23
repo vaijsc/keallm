@@ -184,7 +184,7 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
         #     input_ids=qformer_input_ids,
         #     attention_mask=qformer_attention_mask,
         #     query_embeds=query_tokens,
-        #     encoder_hidden_states=image_embeds,
+        #     encoder_hidden_states=language_model_inputs,
         #     encoder_attention_mask=image_attention_mask,
         #     output_attentions=output_attentions,
         #     output_hidden_states=output_hidden_states,
@@ -288,7 +288,7 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
             input_ids = (
                 torch.LongTensor([[self.config.text_config.bos_token_id]])
                 .repeat(batch_size, 1)
-                .to(image_embeds.device)
+                .to(language_model_inputs.device)
             )
         if attention_mask is None:
             attention_mask = torch.ones_like(input_ids)
@@ -318,7 +318,7 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
             if self.config.text_config.architectures[0] == "LlamaForCausalLM"
             else self.config.text_config.bos_token_id
         )
-        bos_tokens = torch.LongTensor([[bos_token_id]]).repeat(batch_size, 1).to(image_embeds.device)
+        bos_tokens = torch.LongTensor([[bos_token_id]]).repeat(batch_size, 1).to(language_model_inputs.device)
         if not isinstance(outputs, torch.Tensor):
             outputs.sequences = torch.cat([bos_tokens, outputs.sequences], dim=-1)
         else:
