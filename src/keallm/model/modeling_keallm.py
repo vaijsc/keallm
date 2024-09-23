@@ -276,7 +276,7 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
             inputs_embeds=kge_embeds,
             attention_mask=combined_query_kge_attention_mask,
             return_dict=True,
-        ).last_hidden_state
+        )
         query_output = query_outputs.last_hidden_state
         query_output = query_output[:, : query_tokens.size(1), :]
         language_model_inputs = self.language_projection(query_output)
