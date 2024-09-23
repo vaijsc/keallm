@@ -63,11 +63,12 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
         
         self.query_tokens = nn.Parameter(torch.zeros(1, config.num_query_tokens, config.kge_config.hidden_size))
         self.language_projection = nn.Linear(config.kge_config.hidden_size, config.text_config.hidden_size)
+        self.language_projection.bias.data.zero_()
         
-        kg_embedding_model = AutoModelForTextEncoding.from_config(config.kge_config)
-        language_model = AutoModelForCausalLM.from_config(
-            config.text_config, attn_implementation=config._attn_implementation
+        language_model = AutoModelForCausalLM.from_pretrained(
+            config.text_config._name_or_path, attn_implementation=config._attn_implementation
         )
+        kg_embedding_model = AutoModelForTextEncoding.from_pretrained(config.kge_config._name_or_path)
         
         if kg_embedding_model._no_split_modules is not None:
             self._no_split_modules.extend(kg_embedding_model._no_split_modules)
@@ -84,7 +85,7 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
         self.kg_embedding_model = kg_embedding_model
         self.language_model = language_model
         # Initialize weights and apply final processing
-        self.post_init()
+        # self.post_init()
 
     def get_input_embeddings(self):
         return self.language_model.get_input_embeddings()
@@ -124,8 +125,25 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
         if hasattr(self.language_model, "_hf_hook"):
             self.language_model._hf_hook.io_same_device = True  # For `generate` compatibility
 
+    # def forward(
+    #     self,
+    #     pixel_values: torch.FloatTensor,
+    #     qformer_input_ids: torch.FloatTensor,
+    #     qformer_attention_mask: Optional[torch.LongTensor] = None,
+    #     input_ids: Optional[torch.FloatTensor] = None,
+    #     attention_mask: Optional[torch.LongTensor] = None,
+    #     decoder_input_ids: Optional[torch.LongTensor] = None,
+    #     decoder_attention_mask: Optional[torch.LongTensor] = None,
+    #     output_attentions: Optional[bool] = None,
+    #     output_hidden_states: Optional[bool] = None,
+    #     labels: Optional[torch.LongTensor] = None,
+    #     return_dict: Optional[bool] = None,
+    #     interpolate_pos_encoding: bool = False,
+    # ) -> Union[Tuple, KeallmForConditionalGenerationModelOutput]:
+    
     def forward(
         self,
+        kge_input_ids: torch.LongTensor,
         pixel_values: torch.FloatTensor,
         qformer_input_ids: torch.FloatTensor,
         qformer_attention_mask: Optional[torch.LongTensor] = None,
@@ -139,34 +157,40 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
         return_dict: Optional[bool] = None,
         interpolate_pos_encoding: bool = False,
     ) -> Union[Tuple, KeallmForConditionalGenerationModelOutput]:
-        
+    
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
         # step 1: forward the images through the vision encoder,
         # to get image embeddings of shape (batch_size, seq_len, hidden_size)
-        vision_outputs = self.kg_embedding_model(
-            **kge_input,
-            return_dict=return_dict
-        )
-        kge_embeds = vision_outputs[0]
+        
+        kge_w_embeds = self.kg_embedding_model.get_input_embeddings()(kge_input_ids)
+        # kge_w_embeds = vision_outputs[0]
+        # difference with BLIP-2 here: we also feed the instruction prompt to the Q-Former
+        query_tokens = self.query_tokens.expand(kge_w_embeds.shape[0], -1, -1)
+        query_attention_mask = torch.ones(query_tokens.size()[:-1], dtype=torch.long, device=kge_embeds.device)
 
         # step 2: forward the query tokens through the QFormer, using the image embeddings for cross-attention
-        kge_attention_mask = torch.ones(kge_embeds.size()[:-1], dtype=torch.long, device=kge_embeds.device)
+        kge_attention_mask = torch.ones(kge_w_embeds.size()[:-1], dtype=torch.long, device=kge_embeds.device)
 
-        # difference with BLIP-2 here: we also feed the instruction prompt to the Q-Former
-        query_tokens = self.query_tokens.expand(kge_embeds.shape[0], -1, -1)
-        query_attention_mask = torch.ones(query_tokens.size()[:-1], dtype=torch.long, device=kge_embeds.device)
         
-        query_outputs = self.qformer(
-            input_ids=qformer_input_ids,
-            attention_mask=qformer_attention_mask,
-            query_embeds=query_tokens,
-            encoder_hidden_states=image_embeds,
-            encoder_attention_mask=image_attention_mask,
+        query_outputs = self.kg_embedding_model(
+            inputs_embeds=kge_w_embeds,
+            attention_mask=kge_attention_mask,
             output_attentions=output_attentions,
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
         )
+        
+        # query_outputs = self.qformer(
+        #     input_ids=qformer_input_ids,
+        #     attention_mask=qformer_attention_mask,
+        #     query_embeds=query_tokens,
+        #     encoder_hidden_states=image_embeds,
+        #     encoder_attention_mask=image_attention_mask,
+        #     output_attentions=output_attentions,
+        #     output_hidden_states=output_hidden_states,
+        #     return_dict=return_dict,
+        # )
         query_output = query_outputs[0][:, : query_tokens.size(1), :]
 
         # step 3: use the language model, conditioned on the query outputs and the prompt
@@ -236,30 +260,25 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
             # preprocess for `accelerate`
             self._preprocess_accelerate()
 
-        batch_size = pixel_values.shape[0]
-        image_embeds = self.vision_model(
-            pixel_values,
-            return_dict=True,
-            interpolate_pos_encoding=interpolate_pos_encoding,
-        ).last_hidden_state
+        batch_size = input_ids.shape[0]
+        kge_w_embeds = self.kg_embedding_model.get_input_embeddings()(kge_input_ids)
+        # kge_w_embeds = vision_outputs[0]
+        # difference with BLIP-2 here: we also feed the instruction prompt to the Q-Former
+        query_tokens = self.query_tokens.expand(kge_w_embeds.shape[0], -1, -1)
+        query_attention_mask = torch.ones(query_tokens.size()[:-1], dtype=torch.long, device=kge_embeds.device)
 
-        image_attention_mask = torch.ones(image_embeds.size()[:-1], dtype=torch.long, device=image_embeds.device)
+        # step 2: forward the query tokens through the QFormer, using the image embeddings for cross-attention
+        kge_attention_mask = torch.ones(kge_w_embeds.size()[:-1], dtype=torch.long, device=kge_embeds.device)
 
-        query_tokens = self.query_tokens.expand(image_embeds.shape[0], -1, -1)
-        query_attention_mask = torch.ones(query_tokens.size()[:-1], dtype=torch.long, device=image_embeds.device)
-        if qformer_attention_mask is None:
-            qformer_attention_mask = torch.ones_like(qformer_input_ids)
-        qformer_attention_mask = torch.cat([query_attention_mask, qformer_attention_mask], dim=1)
-        query_outputs = self.qformer(
-            input_ids=qformer_input_ids,
-            attention_mask=qformer_attention_mask,
-            query_embeds=query_tokens,
-            encoder_hidden_states=image_embeds,
-            encoder_attention_mask=image_attention_mask,
-            return_dict=True,
+        
+        query_outputs = self.kg_embedding_model(
+            inputs_embeds=kge_w_embeds,
+            attention_mask=kge_attention_mask,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict,
         )
-        query_output = query_outputs.last_hidden_state[:, : query_tokens.size(1), :]
-
+        
         language_model_inputs = self.language_projection(query_output)
         language_attention_mask = torch.ones(
             language_model_inputs.size()[:-1], dtype=torch.long, device=language_model_inputs.device
