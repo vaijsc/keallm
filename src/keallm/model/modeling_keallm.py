@@ -262,8 +262,8 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
         # kge_w_embeds = vision_outputs[0]
         # difference with BLIP-2 here: we also feed the instruction prompt to the Q-Former
         query_tokens = self.query_tokens.expand(kge_w_embeds.shape[0], -1, -1)
-        query_attention_mask = torch.ones(query_tokens.size()[:-1], dtype=torch.long, device=kge_embeds.device)
-        kge_attention_mask = torch.ones(kge_w_embeds.size()[:-1], dtype=torch.long, device=kge_embeds.device)
+        query_attention_mask = torch.ones(query_tokens.size()[:-1], dtype=torch.long, device=kge_w_embeds.device)
+        kge_attention_mask = torch.ones(kge_w_embeds.size()[:-1], dtype=torch.long, device=kge_w_embeds.device)
 
         kge_embeds = torch.cat([query_tokens, kge_w_embeds.to(query_tokens.device)], dim=1)
         # step 2: forward the query tokens through the QFormer, using the image embeddings for cross-attention
