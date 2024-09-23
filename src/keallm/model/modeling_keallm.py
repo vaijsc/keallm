@@ -1,7 +1,8 @@
 from typing import Any, Optional, Tuple, Union
 
-from torch import nn
 import torch
+from torch import nn
+from torch.nn import CrossEntropyLoss
 from transformers import AutoModelForTextEncoding, AutoModelForCausalLM, AutoTokenizer
 from transformers.modeling_utils import PreTrainedModel
 from transformers.utils import ModelOutput
@@ -61,7 +62,7 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
         
-        self.query_tokens = nn.Parameter(torch.zeros(1, config.num_query_tokens, config.kge_config.hidden_size))
+        self.query_tokens = nn.Parameter(torch.normal(0, 1 size=(1, config.num_query_tokens, config.kge_config.hidden_size)))
         self.language_projection = nn.Linear(config.kge_config.hidden_size, config.text_config.hidden_size)
         self.language_projection.bias.data.zero_()
         
