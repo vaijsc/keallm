@@ -62,7 +62,7 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
         
-        self.query_tokens = nn.Parameter(torch.normal(0, 1 size=(1, config.num_query_tokens, config.kge_config.hidden_size)))
+        self.query_tokens = nn.Parameter(torch.normal(0, 1, size=(1, config.num_query_tokens, config.kge_config.hidden_size)))
         self.language_projection = nn.Linear(config.kge_config.hidden_size, config.text_config.hidden_size)
         self.language_projection.bias.data.zero_()
         
