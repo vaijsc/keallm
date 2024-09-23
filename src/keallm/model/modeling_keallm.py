@@ -275,9 +275,7 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
         query_outputs = self.kg_embedding_model(
             inputs_embeds=kge_embeds,
             attention_mask=combined_query_kge_attention_mask,
-            output_attentions=output_attentions,
-            output_hidden_states=output_hidden_states,
-            return_dict=return_dict,
+            return_dict=True,
         )
         
         language_model_inputs = self.language_projection(query_output)
