@@ -235,7 +235,7 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
             loss = loss_fct(shift_logits.view(-1, self.config.text_config.vocab_size), shift_labels.view(-1))
 
         if not return_dict:
-            output = (logits, vision_outputs, query_outputs, outputs)
+            output = (logits, query_outputs, outputs)
             return ((loss,) + output) if loss is not None else output
 
         return KeallmForConditionalGenerationModelOutput(
@@ -248,7 +248,7 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
     @torch.no_grad()
     def generate(
         self,
-        kge_input_ids: torch.LongTensor,
+        kge_input_ids: Optional[torch.LongTensor] = None,
         input_ids: Optional[torch.LongTensor] = None,
         attention_mask: Optional[torch.LongTensor] = None,
         interpolate_pos_encoding: bool = False,
