@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from torch.utils.data import Dataset
     from transformers import ProcessorMixin
     from transformers.trainer import PredictionOutput
-
+    from transformers import PreTrainedTokenizer
     from ...hparams import FinetuningArguments
 
 
@@ -48,11 +48,10 @@ class CustomSeq2SeqTrainer(Seq2SeqTrainer):
     """
 
     def __init__(
-        self, finetuning_args: "FinetuningArguments", processor: Optional["ProcessorMixin"], **kwargs
+        self, finetuning_args: "FinetuningArguments", processor: Optional["ProcessorMixin"]=None, **kwargs
     ) -> None:
         super().__init__(**kwargs)
         self.finetuning_args = finetuning_args
-
         if processor is not None:
             self.add_callback(SaveProcessorCallback(processor))
 

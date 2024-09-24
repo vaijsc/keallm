@@ -244,9 +244,91 @@ def get_dataset(
             raise ValueError("Turn off `streaming` when saving dataset to disk.")
 
     # # Load and preprocess dataset
-    # with training_args.main_process_first(desc="load dataset"):
-    #     dataset = _get_merged_dataset(data_args.dataset, model_args, data_args, training_args, stage)
-    #     eval_dataset = _get_merged_dataset(data_args.eval_dataset, model_args, data_args, training_args, stage)
+    with training_args.main_process_first(desc="load dataset"):
+        dataset = _get_merged_dataset(data_args.dataset, model_args, data_args, training_args, stage)
+        eval_dataset = _get_merged_dataset(data_args.eval_dataset, model_args, data_args, training_args, stage)
+
+    with training_args.main_process_first(desc="pre-process dataset"):
+        dataset = _get_preprocessed_dataset(
+            dataset, data_args, training_args, stage, template, tokenizer, processor, is_eval=False
+        )
+        eval_dataset = _get_preprocessed_dataset(
+            eval_dataset, data_args, training_args, stage, template, tokenizer, processor, is_eval=True
+        )
+
+        if data_args.val_size > 1e-6:
+            dataset_dict = split_dataset(dataset, data_args, seed=training_args.seed)
+        else:
+            dataset_dict = {}
+            if dataset is not None:
+                if data_args.streaming:
+                    dataset = dataset.shuffle(buffer_size=data_args.buffer_size, seed=training_args.seed)
+
+                dataset_dict["train"] = dataset
+
+            if eval_dataset is not None:
+                if data_args.streaming:
+                    eval_dataset = eval_dataset.shuffle(buffer_size=data_args.buffer_size, seed=training_args.seed)
+
+                dataset_dict["validation"] = eval_dataset
+
+            dataset_dict = DatasetDict(dataset_dict)
+
+        if data_args.tokenized_path is not None:
+            if training_args.should_save:
+                dataset_dict.save_to_disk(data_args.tokenized_path)
+                logger.info("Tokenized dataset saved at {}.".format(data_args.tokenized_path))
+                logger.info("Please restart the training with `tokenized_path: {}`.".format(data_args.tokenized_path))
+
+            sys.exit(0)
+
+        dataset_module = {}
+        if "train" in dataset_dict:
+            dataset_module["train_dataset"] = dataset_dict["train"]
+
+        if "validation" in dataset_dict:
+            dataset_module["eval_dataset"] = dataset_dict["validation"]
+
+        return dataset_module
+
+def get_dataset_FB15k237(
+    template: "Template",
+    model_args: "ModelArguments",
+    data_args: "DataArguments",
+    training_args: "Seq2SeqTrainingArguments",
+    stage: Literal["pt", "sft", "rm", "ppo", "kto"],
+    tokenizer: "PreTrainedTokenizer",
+    processor: Optional["ProcessorMixin"] = None,
+) -> "DatasetModule":
+    r"""
+    Gets the train dataset and optionally gets the evaluation dataset.
+    """
+    # Load tokenized dataset
+    if data_args.tokenized_path is not None:
+        if has_tokenized_data(data_args.tokenized_path):
+            logger.warning("Loading dataset from disk will ignore other data arguments.")
+            dataset_dict: "DatasetDict" = load_from_disk(data_args.tokenized_path)
+            logger.info("Loaded tokenized dataset from {}.".format(data_args.tokenized_path))
+
+            dataset_module: Dict[str, "Dataset"] = {}
+            if "train" in dataset_dict:
+                dataset_module["train_dataset"] = dataset_dict["train"]
+
+            if "validation" in dataset_dict:
+                dataset_module["eval_dataset"] = dataset_dict["validation"]
+
+            if data_args.streaming:
+                dataset_module = {k: v.to_iterable_dataset() for k, v in dataset_module.items()}
+
+            return dataset_module
+
+        if data_args.streaming:
+            raise ValueError("Turn off `streaming` when saving dataset to disk.")
+
+    # # Load and preprocess dataset
+    with training_args.main_process_first(desc="load dataset"):
+        dataset = _get_merged_dataset(data_args.dataset, model_args, data_args, training_args, stage)
+        eval_dataset = _get_merged_dataset(data_args.eval_dataset, model_args, data_args, training_args, stage)
 
     with training_args.main_process_first(desc="pre-process dataset"):
         dataset = _get_preprocessed_dataset(
