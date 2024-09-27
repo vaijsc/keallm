@@ -5,7 +5,7 @@ from torch import nn
 from torch.nn import CrossEntropyLoss
 from transformers import AutoModelForTextEncoding, AutoModelForCausalLM, AutoTokenizer
 from transformers.modeling_utils import PreTrainedModel
-from transformers.utils import ModelOutput
+from transformers.generation.utils import ModelOutput, GenerationMixin
 from dataclasses import dataclass
 from typing import List, Optional, Tuple, Union
 
@@ -58,7 +58,9 @@ class KeallmPreTrainedModel(PreTrainedModel):
         elif isinstance(module, nn.Linear) and module.bias is not None:
             module.bias.data.zero_()
 
-class KeallmForConditionalGeneration(KeallmPreTrainedModel):
+class KeallmForConditionalGeneration(KeallmPreTrainedModel, GenerationMixin):
+    config_class = KeallmConfig
+    
     def __init__(self, config):
         super().__init__(config)
         
@@ -82,7 +84,10 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
 
         if language_model._keep_in_fp32_modules is not None:
             self._keep_in_fp32_modules.extend(language_model._keep_in_fp32_modules)
-
+        if language_model._tied_weights_keys is not None:
+            self._tied_weights_keys = [f"language_model.{k}" for k in language_model._tied_weights_keys]
+        if kg_embedding_model._tied_weights_keys is not None:
+            self._tied_weights_keys = [f"kg_embedding_model.{k}" for k in kg_embedding_model._tied_weights_keys]
         self.kg_embedding_model = kg_embedding_model
         self.language_model = language_model
         # Initialize weights and apply final processing
@@ -156,18 +161,21 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
     ) -> Union[Tuple, KeallmForConditionalGenerationModelOutput]:
     
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
-
+        target_device = self.language_model.device
+        kge_target_device = self.kg_embedding_model.device
         # step 1: forward the images through the vision encoder,
         # to get image embeddings of shape (batch_size, seq_len, hidden_size)
         
         kge_w_embeds = self.kg_embedding_model.get_input_embeddings()(kge_input_ids)
-        # kge_w_embeds = vision_outputs[0]
-        # difference with BLIP-2 here: we also feed the instruction prompt to the Q-Former
+        # if self.language_projection.weight.grad is not None:
+        #     if torch.isnan(self.language_projection.weight.grad).any() or torch.isinf(self.language_projection.weight.grad).any():
+        #         print(self.language_projection.weight.grad)
+        #         print("Gradient has NaN/Inf")
         query_tokens = self.query_tokens.expand(kge_w_embeds.shape[0], -1, -1)
-        query_attention_mask = torch.ones(query_tokens.size()[:-1], dtype=torch.long, device=kge_w_embeds.device)
-        kge_attention_mask = torch.ones(kge_w_embeds.size()[:-1], dtype=torch.long, device=kge_w_embeds.device)
+        query_attention_mask = torch.ones(query_tokens.size()[:-1], dtype=torch.long, device=kge_target_device)
+        kge_attention_mask = torch.ones(kge_w_embeds.size()[:-1], dtype=torch.long, device=kge_target_device)
 
-        kge_embeds = torch.cat([query_tokens, kge_w_embeds.to(query_tokens.device)], dim=1)
+        kge_embeds = torch.cat([query_tokens.to(kge_target_device), kge_w_embeds.to(kge_target_device)], dim=1)
         # step 2: forward the query tokens through the QFormer, using the image embeddings for cross-attention
         combined_query_kge_attention_mask = torch.cat(
             [query_attention_mask, kge_attention_mask], dim=1
@@ -193,25 +201,26 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
         #     return_dict=return_dict,
         # )
         query_output = query_outputs[0][:, : query_tokens.size(1), :]
-
+        
         # step 3: use the language model, conditioned on the query outputs and the prompt
-        language_model_inputs = self.language_projection(query_output)
+        language_model_inputs = self.language_projection(query_output).to(target_device)
         language_model_attention_mask = torch.ones(
-            language_model_inputs.size()[:-1], dtype=torch.long, device=language_model_inputs.device
+            language_model_inputs.size()[:-1], dtype=torch.long, device=target_device
         )
-
+        # print(language_model_inputs)
         inputs_embeds = self.language_model.get_input_embeddings()(input_ids)
+        # print(input_embeds[0][0])
         if attention_mask is None:
             attention_mask = torch.ones_like(input_ids)
 
         # if the model already has "image_token_index" then the input is expanded to account for image embeds
         # otherwise we expand manually by concatenating
         
-        inputs_embeds = torch.cat([language_model_inputs, inputs_embeds.to(language_model_inputs.device)], dim=1)
+        inputs_embeds = torch.cat([language_model_inputs, inputs_embeds.to(target_device)], dim=1)
         attention_mask = torch.cat(
-            [language_model_attention_mask, attention_mask.to(language_model_attention_mask.device)], dim=1
+            [language_model_attention_mask, attention_mask.to(target_device)], dim=1
         )
-        
+        # print(attention_mask[0])
         outputs = self.language_model(
             inputs_embeds=inputs_embeds,
             attention_mask=attention_mask,
@@ -219,21 +228,28 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
         )
+        # print(outputs)
+        
         logits = outputs.logits if return_dict else outputs[0]
         loss = None
         # we compute the loss here since we need to take into account the sequence length of the query embeds
+        logits = logits[:, query_tokens.size(1) :, :]
         if labels is not None:
             labels = labels.to(logits.device)
-            logits = logits[:, -labels.size(1) :, :]
             # Shift so that tokens < n predict n
             shift_logits = logits[..., :-1, :].contiguous()
             shift_labels = labels[..., 1:].contiguous().to(logits.device)
 
             # Flatten the tokens
             loss_fct = CrossEntropyLoss(reduction="mean")
-
+            # print(logits[0][0])
             loss = loss_fct(shift_logits.view(-1, self.config.text_config.vocab_size), shift_labels.view(-1))
-
+            # print(shift_labels[0])
+            # print("Loss: ", loss.item())
+            # loss.backward()
+            # print(self.query_tokens.grad)
+            # print("shift_logits size: ", shift_logits.size())
+            # print("label size: ", shift_labels.size())
         if not return_dict:
             output = (logits, query_outputs, outputs)
             return ((loss,) + output) if loss is not None else output

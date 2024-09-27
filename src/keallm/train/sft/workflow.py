@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, List, Optional
 
-from ...data import SFTDataCollatorWith4DAttentionMask, get_dataset, get_template_and_fix_tokenizer
+from ...data import SFTDataCollatorWith4DAttentionMask, get_dataset, get_dataset_FB15k237_roberta, get_template_and_fix_tokenizer
 from ...extras.constants import IGNORE_INDEX
 from ...extras.misc import get_logits_processor
 from ...extras.ploting import plot_loss
@@ -8,7 +8,6 @@ from ...model import load_model, load_tokenizer
 from ..trainer_utils import create_modelcard_and_push
 from .metric import ComputeAccuracy, ComputeSimilarity, eval_logit_processor
 from .trainer import CustomSeq2SeqTrainer
-
 
 if TYPE_CHECKING:
     from transformers import Seq2SeqTrainingArguments, TrainerCallback
@@ -27,7 +26,14 @@ def run_sft(
     tokenizer_module = load_tokenizer(model_args)
     tokenizer = tokenizer_module["tokenizer"]
     template = get_template_and_fix_tokenizer(tokenizer, data_args)
-    dataset_module = get_dataset(template, model_args, data_args, training_args, stage="sft", **tokenizer_module)
+    print(data_args.dataset)
+    if data_args.dataset[0] == "FB15k-237_roberta":
+        dataset_module = get_dataset_FB15k237_roberta(template, model_args, data_args, training_args, stage="sft", **tokenizer_module)
+    else:
+        dataset_module = get_dataset(template, model_args, data_args, training_args, stage="sft", **tokenizer_module)
+    train_data = dataset_module["train_dataset"]
+    
+    # print(train_data[0])
     model = load_model(tokenizer, model_args, finetuning_args, training_args.do_train)
 
     if getattr(model, "is_quantized", False) and not training_args.do_train:
@@ -36,7 +42,7 @@ def run_sft(
     data_collator = SFTDataCollatorWith4DAttentionMask(
         template=template,
         pad_to_multiple_of=8 if training_args.do_train else None,  # for shift short attention
-        label_pad_token_id=IGNORE_INDEX if data_args.ignore_pad_token_for_loss else tokenizer.pad_token_id,
+        label_pad_token_id=IGNORE_INDEX, # if data_args.ignore_pad_token_for_loss else tokenizer.pad_token_id,
         block_diag_attn=model_args.block_diag_attn,
         attn_implementation=getattr(model.config, "_attn_implementation", None),
         compute_dtype=model_args.compute_dtype,

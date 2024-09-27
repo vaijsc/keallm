@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from keallm.train.tuner import run_exp
-
+from dotenv import load_dotenv
+load_dotenv()
 
 def main():
     run_exp()

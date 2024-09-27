@@ -286,6 +286,14 @@ class ModelArguments(QuantizationArguments, ProcessorArguments, ExportArguments,
         init=False,
         metadata={"help": "The maximum input length for model, derived from `cutoff_len`. Do not specify it."},
     )
+    max_seq_length: Optional[int] = field( 
+        default=256,
+        metadata={"help": "Max length of KGE"}
+    )
+    max_entity_length: Optional[int] = field( 
+        default=256,
+        metadata={"help": "Max length of Entity or Relation"}
+    )
     block_diag_attn: bool = field(
         default=False,
         init=False,

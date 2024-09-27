@@ -81,10 +81,10 @@ def convert_alpaca(
     Converts alpaca format dataset to the standard format.
     """
     prompt = []
-    if dataset_attr.history and isinstance(example[dataset_attr.history], list):
-        for old_prompt, old_response in example[dataset_attr.history]:
-            prompt.append({"role": Role.USER.value, "content": old_prompt})
-            prompt.append({"role": Role.ASSISTANT.value, "content": old_response})
+    # if dataset_attr.history and isinstance(example[dataset_attr.history], list):
+    #     for old_prompt, old_response in example[dataset_attr.history]:
+    #         prompt.append({"role": Role.USER.value, "content": old_prompt})
+    #         prompt.append({"role": Role.ASSISTANT.value, "content": old_response})
 
     query = []
     if dataset_attr.prompt and example[dataset_attr.prompt]:
@@ -122,6 +122,7 @@ def convert_alpaca(
         "_response": response,
         "_system": example[dataset_attr.system] if dataset_attr.system else "",
         "_tools": example[dataset_attr.tools] if dataset_attr.tools else "",
+        "_kge_input_ids": example[dataset_attr.kge] if dataset_attr.kge else None,
         "_images": convert_images(example[dataset_attr.images]) if dataset_attr.images else None,
         "_videos": convert_videos(example[dataset_attr.videos]) if dataset_attr.videos else None,
     }

@@ -25,7 +25,7 @@ from ..extras.logging import get_logger
 from ..extras.misc import has_tokenized_data
 from .aligner import align_dataset
 from .data_utils import merge_dataset, split_dataset
-from .parser import get_dataset_list
+from .parser import get_dataset_list, get_quick_data_attr
 from .preprocess import get_preprocess_and_print_func
 
 
@@ -179,7 +179,9 @@ def _get_preprocessed_dataset(
     preprocess_func, print_function = get_preprocess_and_print_func(
         data_args, stage, template, tokenizer, processor, do_generate=(training_args.predict_with_generate and is_eval)
     )
+    # print(dataset)
     column_names = list(next(iter(dataset)).keys())
+    # column_names = list(dataset.keys())
     kwargs = {}
     if not data_args.streaming:
         kwargs = dict(
@@ -291,7 +293,7 @@ def get_dataset(
 
         return dataset_module
 
-def get_dataset_FB15k237(
+def get_dataset_FB15k237_roberta(
     template: "Template",
     model_args: "ModelArguments",
     data_args: "DataArguments",
@@ -325,11 +327,14 @@ def get_dataset_FB15k237(
         if data_args.streaming:
             raise ValueError("Turn off `streaming` when saving dataset to disk.")
 
-    # # Load and preprocess dataset
-    with training_args.main_process_first(desc="load dataset"):
-        dataset = _get_merged_dataset(data_args.dataset, model_args, data_args, training_args, stage)
-        eval_dataset = _get_merged_dataset(data_args.eval_dataset, model_args, data_args, training_args, stage)
-
+    # # # Load and preprocess dataset
+    # with training_args.main_process_first(desc="load dataset"):
+    #     dataset = _get_merged_dataset(data_args.dataset, model_args, data_args, training_args, stage)
+    #     eval_dataset = _get_merged_dataset(data_args.eval_dataset, model_args, data_args, training_args, stage)
+    # print(dataset)
+    dataset_attr = get_quick_data_attr()
+    dataset = align_dataset(load_dataset("json", data_files="data/Processed/FB15k-237_roberta/train_dataset.jsonl", split="train"), dataset_attr, data_args, training_args)
+    eval_dataset = align_dataset(load_dataset("json", data_files="data/Processed/FB15k-237_roberta/val_dataset.jsonl", split="train"), dataset_attr, data_args, training_args)
     with training_args.main_process_first(desc="pre-process dataset"):
         dataset = _get_preprocessed_dataset(
             dataset, data_args, training_args, stage, template, tokenizer, processor, is_eval=False

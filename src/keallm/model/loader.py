@@ -55,9 +55,10 @@ def _get_init_kwargs(model_args: "ModelArguments") -> Dict[str, Any]:
     return {
         # "pretrained_model_or_path": model_args.model_na
         "trust_remote_code": True,
-        "cache_dir": model_args.cache_dir,
-        "revision": model_args.model_revision,
-        "token": model_args.hf_hub_token,
+        # "cache_dir": model_args.cache_dir,
+        # "revision": model_args.model_revision,
+        # "token": model_args.hf_hub_token,
+        "device_map": "auto"
     }
 
 
@@ -146,7 +147,16 @@ def load_model(
 
     model = None
     lazy_load = False
-    model = KeallmForConditionalGeneration.from_pretrained(model_args.model_name_or_path, **init_kwargs)
+    # model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-chat-hf", device_map="auto")
+    # language_model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2-1.5B-Instruct", device_map="auto")
+    # model = KeallmForConditionalGeneration.from_config(model_args.model_name_or_path)
+    text_config = AutoConfig.from_pretrained("Qwen/Qwen2-1.5B-Instruct", device_map="auto")
+    kge_config = AutoConfig.from_pretrained("ledong0110/FB15k-237-KGE-Roberta-Base", device_map="auto")
+    keallm_config = KeallmConfig.from_kge_text_configs(kge_config=kge_config, text_config=text_config)
+    model = KeallmForConditionalGeneration(keallm_config)
+    # model = KeallmForConditionalGeneration.from_pretrained(model_args.model_name_or_path, **init_kwargs)
+    # model.save_pretrained("./KEALLM-Qwen2-Roberta-1.5B")
+    # model.language_model = language_model
     # is_trainable=True
     if not is_trainable:
         model.requires_grad_(False)
@@ -156,9 +166,11 @@ def load_model(
 
         model.eval()
     else:
-        model.train()
+        # model.query_tokens.requires_grad_(False)
+        # model.language_projection.requires_grad_(False)
         model.language_model.requires_grad_(False)
         model.kg_embedding_model.requires_grad_(False)
+        model.train()
 
     trainable_params, all_param = count_parameters(model)
     if is_trainable:

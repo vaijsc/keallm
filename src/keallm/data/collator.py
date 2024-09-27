@@ -83,13 +83,13 @@ class MultiModalDataCollatorForSeq2Seq(DataCollatorForSeq2Seq):
         for feature in features:
             images = feature.pop("images", None) or []
             videos = feature.pop("videos", None) or []
-            kges = feature.pop("kge_input_ids", None) or []
+            # kges = feature.pop("kge_input_ids", None) or []
             batch_images.extend(images)
             batch_videos.extend(videos)
-            batch_kges.extend(kges)
+            # batch_kges.extend(kges)
             batch_imglens.append(len(images))
             batch_vidlens.append(len(videos))
-            batch_kgelens.append(len(kges))
+            # batch_kgelens.append(len(kges))
             batch_seqlens.append(len(feature["input_ids"]))
 
         mm_inputs = self.template.mm_plugin.get_mm_inputs(
@@ -102,7 +102,7 @@ class MultiModalDataCollatorForSeq2Seq(DataCollatorForSeq2Seq):
 
         features: Dict[str, "torch.Tensor"] = super().__call__(features)
         features.update(mm_inputs)
-        feature.update(dict(kges="kge_input_ids", kge_lens=batch_kgelens))
+        # features.update(dict(kges="kge_input_ids", kge_lens=batch_kgelens))
         return features
 
 

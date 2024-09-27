@@ -19,7 +19,7 @@ from .collator import (
     SFTDataCollatorWith4DAttentionMask,
 )
 from .data_utils import Role, split_dataset
-from .loader import get_dataset
+from .loader import get_dataset, get_dataset_FB15k237_roberta#, get_dataset_FB15k237_bert
 from .template import TEMPLATES, Template, get_template_and_fix_tokenizer
 
 
@@ -31,6 +31,8 @@ __all__ = [
     "Role",
     "split_dataset",
     "get_dataset",
+    "get_dataset_FB15k237_roberta",
+    # "get_dataset_FB15k237_bert",
     "TEMPLATES",
     "Template",
     "get_template_and_fix_tokenizer",

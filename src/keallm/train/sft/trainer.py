@@ -70,13 +70,12 @@ class CustomSeq2SeqTrainer(Seq2SeqTrainer):
     #         self.optimizer = create_custom_optimizer(self.model, self.args, self.finetuning_args)
     #     return super().create_optimizer()
 
-    @override
-    def create_scheduler(
-        self, num_training_steps: int, optimizer: Optional["torch.optim.Optimizer"] = None
-    ) -> "torch.optim.lr_scheduler.LRScheduler":
-        create_custom_scheduler(self.args, num_training_steps, optimizer)
-        return super().create_scheduler(num_training_steps, optimizer)
-
+    # @override
+    # def create_scheduler(
+    #     self, num_training_steps: int, optimizer: Optional["torch.optim.Optimizer"] = None
+    # ) -> "torch.optim.lr_scheduler.LRScheduler":
+    #     create_custom_scheduler(self.args, num_training_steps, optimizer)
+    #     return super().create_scheduler(num_training_steps, optimizer)
     @override
     def prediction_step(
         self,

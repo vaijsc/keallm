@@ -70,6 +70,32 @@ class DatasetAttr:
     def set_attr(self, key: str, obj: Dict[str, Any], default: Optional[Any] = None) -> None:
         setattr(self, key, obj.get(key, default))
 
+def get_quick_data_attr() -> List["DatasetAttr"]:
+    r"""
+    Gets the attributes of the datasets.
+    """
+    
+
+    dataset_attr: "DatasetAttr" = DatasetAttr("file", dataset_name="FB15k-237")
+    object_map = {
+        "prompt": "question",
+        "response": "label",
+        "kge": "kge_input_ids",
+    }
+
+
+    column_names = ["system", "tools", "images", "videos", "chosen", "rejected", "kto_tag", "kge"]
+    if dataset_attr.formatting == "alpaca":
+        column_names.extend(["prompt", "query", "response", "history"])
+    else:
+        column_names.extend(["messages"])
+    for colum in column_names:      
+        dataset_attr.set_attr(colum, object_map)
+   
+
+     
+
+    return dataset_attr
 
 def get_dataset_list(dataset_names: Optional[Sequence[str]], dataset_dir: str) -> List["DatasetAttr"]:
     r"""

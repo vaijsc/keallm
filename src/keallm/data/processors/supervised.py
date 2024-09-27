@@ -119,6 +119,7 @@ def preprocess_supervised_dataset(
         model_inputs["input_ids"].append(input_ids)
         model_inputs["attention_mask"].append([1] * len(input_ids))
         model_inputs["labels"].append(labels)
+        model_inputs["kge_input_ids"].append(examples["_kge_input_ids"][i])
         model_inputs["images"].append(examples["_images"][i])
         model_inputs["videos"].append(examples["_videos"][i])
 
@@ -145,10 +146,10 @@ def preprocess_packed_supervised_dataset(
             continue
 
         input_ids, labels = _encode_supervised_example(
-            prompt=examples["_prompt"][i],
-            response=examples["_response"][i],
-            system=examples["_system"][i],
-            tools=examples["_tools"][i],
+            prompt=examples["question"][i],
+            response=examples["label"][i],
+            # system=examples["_system"][i],
+            tools=examples["_tools"][i] or [],
             images=examples["_images"][i] or [],
             videos=examples["_videos"][i] or [],
             template=template,
