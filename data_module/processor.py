@@ -55,7 +55,7 @@ class KGCDataset(Dataset):
 
     def loadData(self):
         data = []
-        with open(f"./data/{self.args.dataset}/{self.mode}.tsv") as file:
+        with open(f"../data/{self.args.dataset}/{self.mode}.tsv") as file:
             for line in file.readlines():
                 h,r,t = list(map(int,line.strip().split()))
                 data.append(Example(hr=(h,r),t=t, inverse=False))
@@ -83,7 +83,7 @@ class PretrainKGCDataset(Dataset):
 
     def loadData(self, punc_split="\t"):
         data = []
-        with open(f"./data/{self.args.dataset}/entity2text.txt") as file:
+        with open(f"../data/{self.args.dataset}/entity2text.txt") as file:
             for line in file.readlines():
                 e, text = line.strip().split("\t")
                 data.append(int(e))
@@ -221,7 +221,7 @@ class LAMADataset(Dataset):
         self.subdataset_list = ['Google_RE', 'Squad', 'TREx', 'ConceptNet']
         self.subdataset = [args.lamadataset] if args.lamadataset is not None \
                         else self.subdataset_list
-        self.data_dir = lambda path: os.path.join(f'./data/LAMA',path)
+        self.data_dir = lambda path: os.path.join(f'../data/LAMA',path)
 
         self.template = {"place_of_birth": "[X] was born in [Y] .", 
                         "date_of_birth": "[X] (born [Y]).", 
@@ -425,7 +425,7 @@ class CommonSenseDataset(Dataset):
     def loadData(self):
         data = []
         # warning, csv for common sense dataset
-        data = pd.read_csv(f"./data/{self.args.dataset}/{self.mode}.csv")
+        data = pd.read_csv(f"../data/{self.args.dataset}/{self.mode}.csv")
         tmp_data = []
         hrt = ['head', 'relation', 'tail']
         for _ in hrt:

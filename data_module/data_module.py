@@ -15,9 +15,9 @@ from sklearn.cluster import KMeans
 from torch.utils.data import DataLoader, TensorDataset, Dataset
 from transformers import AutoTokenizer, BertTokenizer, T5Tokenizer, T5TokenizerFast
 import numpy as np
-from .processor import KGCDataset, PretrainKGCDataset
-from .base_data_module import BaseKGQADataModule, Config
-from .utils import LinkGraph, Roberta_utils
+from processor import KGCDataset, PretrainKGCDataset
+from base_data_module import BaseKGQADataModule, Config
+from utils import LinkGraph, Roberta_utils
 from datasets import Dataset as HFDataset 
 
 ENTITY_PADDING_INDEX = 1
@@ -48,30 +48,56 @@ def process_triplet_batch(examples, tokenizer, relation2text, entity2text, filte
         head_entity = tail_entity = entity2text[h].split(" , ")[0]
         
         if not inverse:
-            question = f"What is the {relation2text[r]} of {head_entity}?"
+            question = f"Please fill [MASK] to complete this triple: ({head_entity}, {relation2text[r]}, [MASK])"
             filter_entities = filter_hr_to_t[(h, r)]
-            input_text = [tokenizer.pad_token, entity2text[h], tokenizer.pad_token, relation2text[r], tokenizer.mask_token]
-            ent_pos, rel_pos = 1, 3
+            input_ = tokenizer(
+                tokenizer.sep_token.join([tokenizer.pad_token, entity2text[h]]), 
+                                tokenizer.sep_token.join([tokenizer.pad_token, relation2text[r], tokenizer.mask_token]),
+                            padding='max_length', truncation="longest_first", max_length=256,
+            )
+            cnt = 0
+            for i in range(len(input_.input_ids)):
+                if input_.input_ids[i] == tokenizer.pad_token_id:
+                    if cnt == 2:
+                        break
+                    if cnt == 1:
+                        cnt += 1
+                        input_.input_ids[i] = len(tokenizer) + len(entity2text) + r
+                    if cnt == 0:
+                        cnt += 1
+                        input_.input_ids[i] = h + len(tokenizer)
+            # input_text = [tokenizer.pad_token, entity2text[h], tokenizer.pad_token, relation2text[r], tokenizer.mask_token]
+            # ent_pos, rel_pos = 1, 3
         else:
-            question = f"What is {relation2text[r]} to {tail_entity}?"
+            question = f"Please fill [MASK] to complete this triple: ([MASK], {relation2text[r]}, {head_entity})"
             filter_entities = filter_tr_to_h[(h, r)]
-            input_text = [tokenizer.mask_token, tokenizer.pad_token, relation2text[r], tokenizer.pad_token, entity2text[h]]
-            ent_pos, rel_pos = 4, 2
+            # input_text = [tokenizer.mask_token, tokenizer.pad_token, relation2text[r], tokenizer.pad_token, entity2text[h]]
+            # ent_pos, rel_pos = 4, 2
+            input_ = tokenizer(tokenizer.sep_token.join([tokenizer.mask_token, tokenizer.pad_token, relation2text[r]]), 
+                    tokenizer.sep_token.join([tokenizer.pad_token, entity2text[h]]),
+                padding='max_length', truncation="longest_first", max_length=256,
+            )
+            cnt = 0
+            for i in range(len(input_.input_ids)):
+                if input_.input_ids[i] == tokenizer.pad_token_id:
+                    if cnt == 2:
+                        break
+                    if cnt == 1:
+                        cnt += 1
+                        input_.input_ids[i] = h + len(tokenizer)
+                    if cnt == 0:
+                        cnt += 1
+                        input_.input_ids[i] = len(tokenizer) + len(entity2text) + r
 
-        kge_input = tokenizer(
-            tokenizer.sep_token.join(input_text),
-            padding='max_length',  # Pad to max_length
-            truncation=True,
-            max_length=args.max_seq_length,
-            return_tensors="pt"
-        )
 
-        kge_input.input_ids[0][ent_pos] = st_entity + (h if not inverse else t)
-        kge_input.input_ids[0][rel_pos] = st_relation + r
+        kge_input = input_
+
+        # kge_input.input_ids[0][ent_pos] = st_entity + (h if not inverse else t)
+        # kge_input.input_ids[0][rel_pos] = st_relation + r
 
         # filtered_entities = [ent for ent in filter_entities if ent != t]
         target_entities = [entity2text[ent_id].split(" , ")[0] for ent_id in filter_entities]
-        label_text = f"The possible answers: {', '.join(target_entities)}"
+        label_text = "|".join(target_entities)
 
         # Append results to the lists
         results["kge_input_ids"].append(kge_input.input_ids[0])
@@ -154,3 +180,24 @@ class FB15k237DataModule(BaseKGQADataModule):
         inverse = example['inverse']
 
         return self._process_triplet(h, r, t, inverse)
+
+if __name__ == "__main__":
+    # from src.kge.data_module import KNNKGEDataModule
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--punc_split", type=str, default=" , ", help="Punctuation to split on")
+    # KNNKGEDataModule.add_to_argparse(parser)
+    # data_module = KNNKGEDataModule(parser.parse_args())
+    FB15k237DataModule.add_to_argparse(parser)
+    args = parser.parse_args()
+    data_module = FB15k237DataModule(args)
+    data_module.setup()
+    # train_data = data_module.data_test
+    # for i in train_data:
+    #     print(i)
+    #     break
+    # test_data = data_module.test_dataloader()
+    # for i in iter(test_data):
+    #     print(i)
+    #     break

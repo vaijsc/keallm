@@ -6,8 +6,8 @@ from torch.utils.data import DataLoader
 
 import time
 from collections import defaultdict
-from .processor import KGCDataset
-from .utils import LinkGraph
+from processor import KGCDataset
+from utils import LinkGraph
 
 class Config(dict):
     def __getattr__(self, name):
@@ -49,7 +49,7 @@ class BaseKGQADataModule:
         
         self.ent_freq = defaultdict(int)
         for mode in ["train"]:
-            with open(f"data/{self.args.dataset}/{mode}.tsv") as file:
+            with open(f"../data/{self.args.dataset}/{mode}.tsv") as file:
                 for line in file.readlines():
                     h, r, t = lmap(int,line.strip().split('\t'))
                     self.ent_freq[h] += 1
@@ -58,7 +58,7 @@ class BaseKGQADataModule:
     def get_entity_to_text(self):
         entity2text = {}
         self.entity2id = {}
-        with open(f"./data/{self.args.dataset}/entity2text.txt") as file:
+        with open(f"../data/{self.args.dataset}/entity2text.txt") as file:
             for line in file.readlines():
                 try:
                     id_, text = line.strip().split("\t")
@@ -74,7 +74,7 @@ class BaseKGQADataModule:
     
     def get_relation_to_text(self):
         relation2text = {}
-        with open(f"./data/{self.args.dataset}/relation2text.txt") as file:
+        with open(f"../data/{self.args.dataset}/relation2text.txt") as file:
             for line in file.readlines():
                 id_, text = line.strip().split("\t")
                 relation2text[int(id_)] = text
@@ -96,7 +96,7 @@ class BaseKGQADataModule:
 
 
         for mode in ["train", "dev", "test"]:
-            with open(f"data/{self.args.dataset}/{mode}.tsv") as file:
+            with open(f"../data/{self.args.dataset}/{mode}.tsv") as file:
                 for line in file.readlines():
                     h, r, t = lmap(int,line.strip().split('\t'))
                     self.filter_hr_to_t[(h,r)].append(t)
@@ -110,7 +110,7 @@ class BaseKGQADataModule:
         print("=== max filter ent {} ===".format(max_filter_ent))
         
         entity2text = []
-        with open(f"data/{self.args.dataset}/entity2text.txt") as file:
+        with open(f"../data/{self.args.dataset}/entity2text.txt") as file:
             for line in file.readlines():
                 line = line.strip().split("\t")[1]
                 entity2text.append(line)
