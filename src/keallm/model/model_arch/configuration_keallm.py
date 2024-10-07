@@ -37,7 +37,7 @@ class KeallmConfig(PretrainedConfig):
         
         self.kge_config = CONFIG_MAPPING[kge_model_type](**kge_config)
         self.text_config = CONFIG_MAPPING[text_model_type](**text_config)
-
+            
         self.tie_word_embeddings = self.text_config.tie_word_embeddings
         self.num_query_tokens = num_query_tokens
         self.initializer_factor = 1.0

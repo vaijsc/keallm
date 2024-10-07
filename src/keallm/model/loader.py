@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, TypedDict
 
 import torch
 from transformers import AutoConfig, AutoModelForCausalLM, AutoModelForVision2Seq, AutoProcessor, AutoTokenizer
+
 from trl import AutoModelForCausalLMWithValueHead
 
 from ..extras.logging import get_logger
@@ -27,6 +28,7 @@ from .model_utils.valuehead import load_valuehead_params
 from .model_utils.visual import get_image_seqlen
 
 from .model_arch import KeallmForConditionalGeneration, KeallmConfig
+from .prompt_tuning.model import get_pt_model, get_lora_model
 from .patcher import patch_config, patch_model, patch_tokenizer, patch_valuehead_model
 
 
@@ -58,7 +60,8 @@ def _get_init_kwargs(model_args: "ModelArguments") -> Dict[str, Any]:
         # "cache_dir": model_args.cache_dir,
         # "revision": model_args.model_revision,
         # "token": model_args.hf_hub_token,
-        "device_map": "auto"
+        "device_map": "auto",
+        # "torch_dtype": "float32"
     }
 
 
@@ -147,17 +150,27 @@ def load_model(
 
     model = None
     lazy_load = False
-    # model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-chat-hf", device_map="auto")
-    # language_model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2-1.5B-Instruct", device_map="auto")
-    # model = KeallmForConditionalGeneration.from_config(model_args.model_name_or_path)
-    text_config = AutoConfig.from_pretrained("Qwen/Qwen2-1.5B-Instruct", device_map="auto")
-    kge_config = AutoConfig.from_pretrained("ledong0110/FB15k-237-KGE-Roberta-Base", device_map="auto")
-    keallm_config = KeallmConfig.from_kge_text_configs(kge_config=kge_config, text_config=text_config)
-    model = KeallmForConditionalGeneration(keallm_config)
-    # model = KeallmForConditionalGeneration.from_pretrained(model_args.model_name_or_path, **init_kwargs)
-    # model.save_pretrained("./KEALLM-Qwen2-Roberta-1.5B")
-    # model.language_model = language_model
-    # is_trainable=True
+    
+    if model_args.model_type == "keallm":
+        if model_args.train_from_scratch:
+            text_config = AutoConfig.from_pretrained(model_args.language_model_path)
+            kge_config = AutoConfig.from_pretrained(model_args.kge_model_path)
+            keallm_config = KeallmConfig.from_kge_text_configs(kge_config=kge_config, text_config=text_config)
+            keallm_config.num_query_tokens = model_args.num_query_tokens
+            model = KeallmForConditionalGeneration(keallm_config)
+        else:
+            model = KeallmForConditionalGeneration.from_pretrained(model_args.model_name_or_path, **init_kwargs)
+    elif model_args.model_type == "pt":
+        model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path)
+        model = get_pt_model(model_args, finetuning_args, model)
+    elif model_args.model_type == "lorra":
+        model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path)
+        model = get_lora_model(model_args, finetuning_args, model)
+    elif model_args.model_type == "freeze":
+        model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path, device_map="auto")
+    else:
+        raise ValueError("Not found model type")
+    
     if not is_trainable:
         model.requires_grad_(False)
         for param in model.parameters():
@@ -168,8 +181,10 @@ def load_model(
     else:
         # model.query_tokens.requires_grad_(False)
         # model.language_projection.requires_grad_(False)
-        model.language_model.requires_grad_(False)
-        model.kg_embedding_model.requires_grad_(False)
+        # model.language_model.requires_grad_(False)
+        # model.kg_embedding_model.requires_grad_(False)
+        # for name, param in self.llm_model.named_parameters():
+        #     param.requires_grad = False
         model.train()
 
     trainable_params, all_param = count_parameters(model)

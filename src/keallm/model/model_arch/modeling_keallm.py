@@ -64,7 +64,7 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel, GenerationMixin):
     def __init__(self, config):
         super().__init__(config)
         
-        self.query_tokens = nn.Parameter(torch.normal(0, 1, size=(1, config.num_query_tokens, config.kge_config.hidden_size)))
+        self.query_tokens = nn.Parameter(torch.normal(0, 1, size=(1, config.num_query_tokens, config.kge_config.hidden_size)).to(torch.float32))
         self.language_projection = nn.Linear(config.kge_config.hidden_size, config.text_config.hidden_size)
         self.language_projection.bias.data.zero_()
         
@@ -90,6 +90,10 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel, GenerationMixin):
             self._tied_weights_keys = [f"kg_embedding_model.{k}" for k in kg_embedding_model._tied_weights_keys]
         self.kg_embedding_model = kg_embedding_model
         self.language_model = language_model
+        for name, param in self.language_model.named_parameters():
+            param.requires_grad = False
+        for name, param in self.kg_embedding_model.named_parameters():
+            param.requires_grad = False
         # Initialize weights and apply final processing
         # self.post_init()
 
@@ -131,22 +135,6 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel, GenerationMixin):
         if hasattr(self.language_model, "_hf_hook"):
             self.language_model._hf_hook.io_same_device = True  # For `generate` compatibility
 
-    # def forward(
-    #     self,
-    #     pixel_values: torch.FloatTensor,
-    #     qformer_input_ids: torch.FloatTensor,
-    #     qformer_attention_mask: Optional[torch.LongTensor] = None,
-    #     input_ids: Optional[torch.FloatTensor] = None,
-    #     attention_mask: Optional[torch.LongTensor] = None,
-    #     decoder_input_ids: Optional[torch.LongTensor] = None,
-    #     decoder_attention_mask: Optional[torch.LongTensor] = None,
-    #     output_attentions: Optional[bool] = None,
-    #     output_hidden_states: Optional[bool] = None,
-    #     labels: Optional[torch.LongTensor] = None,
-    #     return_dict: Optional[bool] = None,
-    #     interpolate_pos_encoding: bool = False,
-    # ) -> Union[Tuple, KeallmForConditionalGenerationModelOutput]:
-    
     def forward(
         self,
         kge_input_ids: torch.LongTensor,
@@ -190,16 +178,6 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel, GenerationMixin):
             return_dict=return_dict,
         )
         
-        # query_outputs = self.qformer(
-        #     input_ids=qformer_input_ids,
-        #     attention_mask=qformer_attention_mask,
-        #     query_embeds=query_tokens,
-        #     encoder_hidden_states=language_model_inputs,
-        #     encoder_attention_mask=image_attention_mask,
-        #     output_attentions=output_attentions,
-        #     output_hidden_states=output_hidden_states,
-        #     return_dict=return_dict,
-        # )
         query_output = query_outputs[0][:, : query_tokens.size(1), :]
         
         # step 3: use the language model, conditioned on the query outputs and the prompt
@@ -228,6 +206,7 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel, GenerationMixin):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
         )
+        
         # print(outputs)
         
         logits = outputs.logits if return_dict else outputs[0]
@@ -331,15 +310,15 @@ class KeallmForConditionalGeneration(KeallmPreTrainedModel, GenerationMixin):
 
         # this is a temporary workaround to be consistent with other generation models and
         # have BOS as the first token, even though under the hood we are calling LM with embeds
-        bos_token_id = (
-            2
-            if self.config.text_config.architectures[0] == "LlamaForCausalLM"
-            else self.config.text_config.bos_token_id
-        )
-        bos_tokens = torch.LongTensor([[bos_token_id]]).repeat(batch_size, 1).to(language_model_inputs.device)
-        if not isinstance(outputs, torch.Tensor):
-            outputs.sequences = torch.cat([bos_tokens, outputs.sequences], dim=-1)
-        else:
-            outputs = torch.cat([bos_tokens, outputs], dim=-1)
+        # bos_token_id = (
+        #     2
+        #     if self.config.text_config.architectures[0] == "LlamaForCausalLM"
+        #     else self.config.text_config.bos_token_id
+        # )
+        # bos_tokens = torch.LongTensor([[bos_token_id]]).repeat(batch_size, 1).to(language_model_inputs.device)
+        # if not isinstance(outputs, torch.Tensor):
+        #     outputs.sequences = torch.cat([bos_tokens, outputs.sequences], dim=-1)
+        # else:
+        #     outputs = torch.cat([bos_tokens, outputs], dim=-1)
 
         return outputs

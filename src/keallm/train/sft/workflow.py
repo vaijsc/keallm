@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, List, Optional
 
-from ...data import SFTDataCollatorWith4DAttentionMask, get_dataset, get_dataset_FB15k237_roberta, get_template_and_fix_tokenizer
+from ...data import SFTDataCollatorWith4DAttentionMask, get_dataset, get_dataset_FB15k237_roberta, get_dataset_MetaQA_roberta, get_template_and_fix_tokenizer
 from ...extras.constants import IGNORE_INDEX
 from ...extras.misc import get_logits_processor
 from ...extras.ploting import plot_loss
@@ -29,9 +29,11 @@ def run_sft(
     print(data_args.dataset)
     if data_args.dataset[0] == "FB15k-237_roberta":
         dataset_module = get_dataset_FB15k237_roberta(template, model_args, data_args, training_args, stage="sft", **tokenizer_module)
+    elif data_args.dataset[0] == "MetaQA_roberta":
+        dataset_module = get_dataset_MetaQA_roberta(template, model_args, data_args, training_args, stage="sft", **tokenizer_module)
     else:
         dataset_module = get_dataset(template, model_args, data_args, training_args, stage="sft", **tokenizer_module)
-    train_data = dataset_module["train_dataset"]
+    # train_data = dataset_module["train_dataset"]
     
     # print(train_data[0])
     model = load_model(tokenizer, model_args, finetuning_args, training_args.do_train)

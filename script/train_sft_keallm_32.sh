@@ -1,0 +1,35 @@
+CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --master_addr 127.0.0.1 --master_port 23956\
+                    src/train.py --output_dir ./save/sft/metaqa/keallm/keallm_32 \
+                    --stage sft \
+                    --hop 1-hop \
+                    --model_name_or_path meta-llama/Llama-2-7b-chat-hf \
+                    --language_model_path meta-llama/Llama-2-7b-chat-hf \
+                    --kge_model_path ledong0110/MetaQA-Roberta-Base \
+                    --model_type keallm \
+                    --template llama2_keallm \
+                    --num_query_tokens 32 \
+                    --train_from_scratch true \
+                    --num_train_epochs 3 \
+                    --save_total_limit 3 \
+                    --load_best_model_at_end true\
+                    --eval_strategy steps \
+                    --save_strategy steps \
+                    --save_steps 20000 \
+                    --eval_steps 20000 \
+                    --logging_first_step true \
+                    --logging_steps 20 \
+                    --bf16 false \
+                    --do_train true \
+                    --do_eval true\
+                    --learning_rate 1.0e-4 \
+                    --warmup_ratio 0.1 \
+                    --lr_scheduler_type cosine \
+                    --eval_dataset MetaQA_roberta \
+                    --ignore_pad_token_for_loss true \
+                    --per_device_eval_batch_size 3 \
+                    --per_device_train_batch_size 1 \
+                    --gradient_accumulation_steps 2\
+                    --dataset MetaQA_roberta \
+                    --tokenized_path ./tokenized_data/MetaQA/1-hop \
+                    --deepspeed ./ds2.json
+                    # --resume_from_checkpoint true\

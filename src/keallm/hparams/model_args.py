@@ -147,7 +147,33 @@ class ModelArguments(QuantizationArguments, ProcessorArguments, ExportArguments,
     r"""
     Arguments pertaining to which model/config/tokenizer we are going to fine-tune or infer.
     """
-
+    model_type: Optional[Literal["pt","lorra", "keallm", "freeze"]] = field(
+        default="keallm",
+        metadata={
+            "help": "Model type"
+        },
+    )
+    num_query_tokens: Optional[int] = field(
+        default=16,
+        metadata={
+            "help": "Number of Virtual tokens"
+        },
+    )
+    
+    kge_model_path: Optional[str] = field(
+        default=None,
+        metadata={
+            "help": "Path to the model weight or identifier from huggingface.co/models or modelscope.cn/models."
+        },
+    )
+    
+    language_model_path: Optional[str] = field(
+        default=None,
+        metadata={
+            "help": "Path to the model weight or identifier from huggingface.co/models or modelscope.cn/models."
+        },
+    )
+    
     model_name_or_path: Optional[str] = field(
         default=None,
         metadata={
