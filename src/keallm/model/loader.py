@@ -151,7 +151,7 @@ def load_model(
     model = None
     lazy_load = False
     
-    if model_args.model_type == "keallm":
+    if "keallm" in model_args.model_type:
         if model_args.train_from_scratch:
             text_config = AutoConfig.from_pretrained(model_args.language_model_path)
             kge_config = AutoConfig.from_pretrained(model_args.kge_model_path)
@@ -160,6 +160,8 @@ def load_model(
             model = KeallmForConditionalGeneration(keallm_config)
         else:
             model = KeallmForConditionalGeneration.from_pretrained(model_args.model_name_or_path, **init_kwargs)
+        if "lora" in model_args.model_type:
+            model = get_lora_model(model_args, finetuning_args, model)
     elif model_args.model_type == "pt":
         model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path, device_map="auto")
         model = get_pt_model(model_args, finetuning_args, model)

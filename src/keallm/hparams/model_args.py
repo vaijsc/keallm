@@ -147,7 +147,7 @@ class ModelArguments(QuantizationArguments, ProcessorArguments, ExportArguments,
     r"""
     Arguments pertaining to which model/config/tokenizer we are going to fine-tune or infer.
     """
-    model_type: Optional[Literal["pt","lorra", "keallm", "freeze"]] = field(
+    model_type: Optional[Literal["pt","lorra", "keallm", "keallm_lora", "freeze"]] = field(
         default="keallm",
         metadata={
             "help": "Model type"
