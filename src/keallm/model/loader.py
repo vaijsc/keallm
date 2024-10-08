@@ -161,10 +161,11 @@ def load_model(
         else:
             model = KeallmForConditionalGeneration.from_pretrained(model_args.model_name_or_path, **init_kwargs)
         if "lora" in model_args.model_type:
-            model = get_lora_model(model_args, finetuning_args, model)
+            model.language_model = get_lora_model(model_args, finetuning_args, model.language_model)
     elif model_args.model_type == "pt":
         model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path, device_map="auto")
         model = get_pt_model(model_args, finetuning_args, model)
+        # print(model.active_adapters)
     elif model_args.model_type == "lorra":
         model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path, device_map="auto")
         model = get_lora_model(model_args, finetuning_args, model)
