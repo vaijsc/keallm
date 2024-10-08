@@ -399,7 +399,7 @@ def get_dataset_MetaQA_roberta(
 
             dataset_module: Dict[str, "Dataset"] = {}
             
-            if model_args.model_type != "keallm":
+            if model_args.model_type != "keallm" and model_args.model_type != "keallm_lora":
                 dataset_dict["train"] = dataset_dict["train"].remove_columns("kge_input_ids")
                 dataset_dict["validation"] = dataset_dict["validation"].remove_columns("kge_input_ids")
                 
