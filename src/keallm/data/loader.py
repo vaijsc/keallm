@@ -402,13 +402,16 @@ def get_dataset_MetaQA_roberta(
             if model_args.model_type != "keallm" and model_args.model_type != "keallm_lora":
                 dataset_dict["train"] = dataset_dict["train"].remove_columns("kge_input_ids")
                 dataset_dict["validation"] = dataset_dict["validation"].remove_columns("kge_input_ids")
-                
+                dataset_dict["test"] = dataset_dict["test"].remove_columns("kge_input_ids")
             
             if "train" in dataset_dict:
                 dataset_module["train_dataset"] = dataset_dict["train"]
 
             if "validation" in dataset_dict:
                 dataset_module["eval_dataset"] = dataset_dict["validation"]
+            
+            if "test" in dataset_dict and training_args.do_predict:
+                dataset_module["eval_dataset"] = dataset_dict["test"]
 
             if data_args.streaming:
                 dataset_module = {k: v.to_iterable_dataset() for k, v in dataset_module.items()}
@@ -471,5 +474,8 @@ def get_dataset_MetaQA_roberta(
 
         if "validation" in dataset_dict:
             dataset_module["eval_dataset"] = dataset_dict["validation"]
+        
+        if "test" in dataset_dict:
+            dataset_module["test_dataset"] = dataset_dict["test"]
 
         return dataset_module

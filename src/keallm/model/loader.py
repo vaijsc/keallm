@@ -181,6 +181,7 @@ def load_model(
                 param.data = param.data.to(model_args.compute_dtype)
 
         model.eval()
+        setattr(model.generation_config, 'max_new_tokens', 200)
     else:
         # model.query_tokens.requires_grad_(False)
         # model.language_projection.requires_grad_(False)
