@@ -1,0 +1,34 @@
+CUDA_VISIBLE_DEVICES=0,2,4,5,6,7 python src/train.py --output_dir ./save/sft/fb15k237/keallm/pt_32 \
+                    --stage sft \
+                    --hop 1-hop \
+                    --model_name_or_path meta-llama/Llama-2-7b-chat-hf \
+                    --language_model_path meta-llama/Llama-2-7b-chat-hf \
+                    --kge_model_path ledong0110/FB15k-237-KGE-Roberta-Base \
+                    --model_type pt \
+                    --template llama2_keallm \
+                    --num_query_tokens 32 \
+                    --train_from_scratch true \
+                    --num_train_epochs 3 \
+                    --save_total_limit 3 \
+                    --load_best_model_at_end true\
+                    --eval_strategy steps \
+                    --save_strategy steps \
+                    --save_steps 5000 \
+                    --eval_steps 5000 \
+                    --logging_first_step true \
+                    --logging_steps 20 \
+                    --bf16 false \
+                    --do_train true \
+                    --do_eval true\
+                    --learning_rate 1.0e-4 \
+                    --warmup_ratio 0.1 \
+                    --lr_scheduler_type cosine \
+                    --eval_dataset FB15k-237_roberta \
+                    --ignore_pad_token_for_loss true \
+                    --per_device_eval_batch_size 5 \
+                    --per_device_train_batch_size 2 \
+                    --gradient_accumulation_steps 2\
+                    --dataset FB15k-237_roberta \
+                    --tokenized_path ./tokenized_data/FB15k-237 \
+                    # --deepspeed ./ds2.json
+                    # --resume_from_checkpoint true\

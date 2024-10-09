@@ -313,11 +313,20 @@ def get_dataset_FB15k237_roberta(
             logger.info("Loaded tokenized dataset from {}.".format(data_args.tokenized_path))
 
             dataset_module: Dict[str, "Dataset"] = {}
+            
+            if model_args.model_type != "keallm" and model_args.model_type != "keallm_lora":
+                dataset_dict["train"] = dataset_dict["train"].remove_columns("kge_input_ids")
+                dataset_dict["validation"] = dataset_dict["validation"].remove_columns("kge_input_ids")
+                dataset_dict["test"] = dataset_dict["test"].remove_columns("kge_input_ids")
+            
             if "train" in dataset_dict:
                 dataset_module["train_dataset"] = dataset_dict["train"]
 
             if "validation" in dataset_dict:
                 dataset_module["eval_dataset"] = dataset_dict["validation"]
+            
+            if "test" in dataset_dict and training_args.do_predict:
+                dataset_module["eval_dataset"] = dataset_dict["test"]
 
             if data_args.streaming:
                 dataset_module = {k: v.to_iterable_dataset() for k, v in dataset_module.items()}
@@ -335,6 +344,7 @@ def get_dataset_FB15k237_roberta(
     dataset_attr = get_quick_data_attr()
     dataset = align_dataset(load_dataset("json", data_files="data/Processed/FB15k-237_roberta/train_dataset.jsonl", split="train"), dataset_attr, data_args, training_args)
     eval_dataset = align_dataset(load_dataset("json", data_files="data/Processed/FB15k-237_roberta/val_dataset.jsonl", split="train"), dataset_attr, data_args, training_args)
+    test_dataset = align_dataset(load_dataset("json", data_files="data/Processed/FB15k-237_roberta/test_dataset.jsonl", split="train"), dataset_attr, data_args, training_args)
     with training_args.main_process_first(desc="pre-process dataset"):
         dataset = _get_preprocessed_dataset(
             dataset, data_args, training_args, stage, template, tokenizer, processor, is_eval=False
@@ -342,7 +352,9 @@ def get_dataset_FB15k237_roberta(
         eval_dataset = _get_preprocessed_dataset(
             eval_dataset, data_args, training_args, stage, template, tokenizer, processor, is_eval=True
         )
-
+        test_dataset = _get_preprocessed_dataset(
+            test_dataset, data_args, training_args, stage, template, tokenizer, processor, is_eval=True
+        )
         if data_args.val_size > 1e-6:
             dataset_dict = split_dataset(dataset, data_args, seed=training_args.seed)
         else:
@@ -358,7 +370,7 @@ def get_dataset_FB15k237_roberta(
                     eval_dataset = eval_dataset.shuffle(buffer_size=data_args.buffer_size, seed=training_args.seed)
 
                 dataset_dict["validation"] = eval_dataset
-
+            dataset_dict["test"] = test_dataset
             dataset_dict = DatasetDict(dataset_dict)
 
         if data_args.tokenized_path is not None:
