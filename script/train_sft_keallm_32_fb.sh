@@ -24,12 +24,12 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --learning_rate 1.0e-4 \
                     --warmup_ratio 0.1 \
                     --lr_scheduler_type cosine \
-                    --eval_dataset MetaQA_roberta \
+                    --eval_dataset FB15k-237_roberta \
                     --ignore_pad_token_for_loss true \
                     --per_device_eval_batch_size 5 \
                     --per_device_train_batch_size 3 \
                     --gradient_accumulation_steps 2\
-                    --dataset MetaQA_roberta \
-                    --tokenized_path ./tokenized_data/MetaQA/1-hop \
+                    --dataset FB15k-237_roberta \
+                    --tokenized_path ./tokenized_data/FB15k-237 \
                     --deepspeed ./ds2.json
                     # --resume_from_checkpoint true\

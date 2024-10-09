@@ -25,8 +25,8 @@ CUDA_VISIBLE_DEVICES=0,1,3,6,7 python src/train.py --output_dir ./save/sft/fb15k
                     --lr_scheduler_type cosine \
                     --eval_dataset FB15k-237_roberta \
                     --ignore_pad_token_for_loss true \
-                    --per_device_eval_batch_size 8 \
-                    --per_device_train_batch_size 6 \
+                    --per_device_eval_batch_size 4 \
+                    --per_device_train_batch_size 2 \
                     --gradient_accumulation_steps 2\
                     --dataset FB15k-237_roberta \
                     --tokenized_path ./tokenized_data/FB15k-237 \
