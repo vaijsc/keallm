@@ -157,6 +157,7 @@ def load_model(
             kge_config = AutoConfig.from_pretrained(model_args.kge_model_path)
             keallm_config = KeallmConfig.from_kge_text_configs(kge_config=kge_config, text_config=text_config)
             keallm_config.num_query_tokens = model_args.num_query_tokens
+            keallm_config.hidden_size = text_config.hidden_size
             model = KeallmForConditionalGeneration(keallm_config)
         else:
             model = KeallmForConditionalGeneration.from_pretrained(model_args.model_name_or_path, **init_kwargs)
