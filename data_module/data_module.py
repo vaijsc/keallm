@@ -56,16 +56,16 @@ def process_triplet_batch(examples, tokenizer, relation2text, entity2text, filte
                             padding='max_length', truncation="longest_first", max_length=256,
             )
             cnt = 0
-            for i in range(len(input_.input_ids)):
-                if input_.input_ids[i] == tokenizer.pad_token_id:
+            for j in range(len(input_.input_ids)):
+                if input_.input_ids[j] == tokenizer.pad_token_id:
                     if cnt == 2:
                         break
                     if cnt == 1:
                         cnt += 1
-                        input_.input_ids[i] = len(tokenizer) + len(entity2text) + r
+                        input_.input_ids[j] = len(tokenizer) + len(entity2text) + r
                     if cnt == 0:
                         cnt += 1
-                        input_.input_ids[i] = h + len(tokenizer)
+                        input_.input_ids[j] = h + len(tokenizer)
             # input_text = [tokenizer.pad_token, entity2text[h], tokenizer.pad_token, relation2text[r], tokenizer.mask_token]
             # ent_pos, rel_pos = 1, 3
         else:
@@ -78,16 +78,16 @@ def process_triplet_batch(examples, tokenizer, relation2text, entity2text, filte
                 padding='max_length', truncation="longest_first", max_length=256,
             )
             cnt = 0
-            for i in range(len(input_.input_ids)):
-                if input_.input_ids[i] == tokenizer.pad_token_id:
+            for j in range(len(input_.input_ids)):
+                if input_.input_ids[j] == tokenizer.pad_token_id:
                     if cnt == 2:
                         break
                     if cnt == 1:
                         cnt += 1
-                        input_.input_ids[i] = h + len(tokenizer)
+                        input_.input_ids[j] = h + len(tokenizer)
                     if cnt == 0:
                         cnt += 1
-                        input_.input_ids[i] = len(tokenizer) + len(entity2text) + r
+                        input_.input_ids[j] = len(tokenizer) + len(entity2text) + r
 
 
         kge_input = input_
@@ -100,12 +100,13 @@ def process_triplet_batch(examples, tokenizer, relation2text, entity2text, filte
         label_text = "|".join(target_entities)
 
         # Append results to the lists
-        results["kge_input_ids"].append(kge_input.input_ids[0])
+        results["kge_input_ids"].append(kge_input.input_ids)
         results["question"].append(question)
         results["label"].append(label_text)
         results["label_ids"].append(filter_entities)
     # Convert lists to tensors (important for batching)
     # results["kge_input_ids"] = torch.stack(results["kge_input_ids"])
+    print(results["kge_input_ids"][0])
     return results
 
 

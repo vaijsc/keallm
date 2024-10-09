@@ -59,7 +59,7 @@ class KGCDataset(Dataset):
             for line in file.readlines():
                 h,r,t = list(map(int,line.strip().split()))
                 data.append(Example(hr=(h,r),t=t, inverse=False))
-                data.append(Example(hr=(t,r),t=h, inverse=True))
+                # data.append(Example(hr=(t,r),t=h, inverse=True))
         
         return data
 
