@@ -7,7 +7,7 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --kge_model_path ledong0110/FB15k-237-KGE-Roberta-Base \
                     --model_type keallm_lora \
                     --template llama2_keallm \
-                    --num_query_tokens 32 \
+                    --num_query_tokens 64 \
                     --train_from_scratch true \
                     --num_train_epochs 3 \
                     --save_total_limit 3 \

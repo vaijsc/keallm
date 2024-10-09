@@ -1,13 +1,13 @@
 CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --master_addr 127.0.0.1 --master_port 23956\
-                    src/train.py --output_dir ./save/sft/metaqa/keallm/keallm_lora \
+                    src/train.py --output_dir ./save/sft/metaqa/keallm/keallm_32_llama13 \
                     --stage sft \
                     --hop 1-hop \
-                    --model_name_or_path meta-llama/Llama-2-7b-chat-hf \
-                    --language_model_path meta-llama/Llama-2-7b-chat-hf \
+                    --model_name_or_path meta-llama/Llama-2-13b-chat-hf \
+                    --language_model_path meta-llama/Llama-2-13b-chat-hf \
                     --kge_model_path ledong0110/MetaQA-Roberta-Base \
-                    --model_type keallm_lora \
+                    --model_type keallm \
                     --template llama2_keallm \
-                    --num_query_tokens 64 \
+                    --num_query_tokens 32 \
                     --train_from_scratch true \
                     --num_train_epochs 3 \
                     --save_total_limit 3 \
@@ -18,7 +18,7 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --eval_steps 20000 \
                     --logging_first_step true \
                     --logging_steps 20 \
-                    --bf16 true \
+                    --bf16 false \
                     --do_train true \
                     --do_eval true\
                     --learning_rate 1.0e-4 \
