@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from typing import TYPE_CHECKING, Any, Dict, Optional, TypedDict
-
+from peft import PeftModel
 import torch
 from transformers import AutoConfig, AutoModelForCausalLM, AutoModelForVision2Seq, AutoProcessor, AutoTokenizer
 
@@ -167,10 +167,11 @@ def load_model(
                 model.from_pretrained(model_args.model_name_or_path, **init_kwargs)
     elif model_args.model_type == "pt":
         model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path, device_map="auto")
-        # model = get_pt_model(model_args, finetuning_args, model)
         # print(model.active_adapters())
         if not model_args.train_from_scratch:
-            model.load_adapter(model_args.language_model_path)
+            model = PeftModel.from_pretrained(model, model_args.language_model_path)
+        else:
+            model = get_pt_model(model_args, finetuning_args, model)
     elif model_args.model_type == "lorra":
         model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path, device_map="auto")
         # model = get_lora_model(model_args, finetuning_args, model)
