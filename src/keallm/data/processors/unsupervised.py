@@ -89,6 +89,7 @@ def preprocess_unsupervised_dataset(
         model_inputs["input_ids"].append(input_ids)
         model_inputs["attention_mask"].append([1] * len(input_ids))
         model_inputs["labels"].append(labels)
+        model_inputs["kge_input_ids"].append(examples["_kge_input_ids"][i])
         model_inputs["images"].append(examples["_images"][i])
         model_inputs["videos"].append(examples["_videos"][i])
 
