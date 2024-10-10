@@ -169,7 +169,9 @@ def load_model(
         # print(model.active_adapters())
     elif model_args.model_type == "lorra":
         model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path, device_map="auto")
-        model = get_lora_model(model_args, finetuning_args, model)
+        # model = get_lora_model(model_args, finetuning_args, model)
+        # if training_args.do_predict:
+        model.load_adapter("./save/sft/metaqa/keallm/lora")
     elif model_args.model_type == "freeze":
         model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path, device_map="auto")
     else:
