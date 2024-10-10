@@ -195,6 +195,7 @@ def _get_preprocessed_dataset(
         batched=True,
         batch_size=data_args.preprocessing_batch_size,
         remove_columns=column_names,
+        load_from_cache_file=False,
         **kwargs,
     )
 
