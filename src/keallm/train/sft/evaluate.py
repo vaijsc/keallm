@@ -54,7 +54,7 @@ def eval_hit(prediction, answer):
 
 
 def get_accuracy(pred, label):
-    df = pd.read_json(path, lines=True)
+    # df = pd.read_json(path, lines=True)
 
     # Load results
     acc_list = []
