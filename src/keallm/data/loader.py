@@ -183,12 +183,12 @@ def _get_preprocessed_dataset(
     column_names = list(next(iter(dataset)).keys())
     # column_names = list(dataset.keys())
     kwargs = {}
-    if not data_args.streaming:
-        kwargs = dict(
-            num_proc=data_args.preprocessing_num_workers,
-            load_from_cache_file=(not data_args.overwrite_cache) or (training_args.local_process_index != 0),
-            desc="Running tokenizer on dataset",
-        )
+    # if not data_args.streaming:
+    #     kwargs = dict(
+    #         num_proc=data_args.preprocessing_num_workers,
+    #         load_from_cache_file=(not data_args.overwrite_cache) or (training_args.local_process_index != 0),
+    #         desc="Running tokenizer on dataset",
+    #     )
 
     dataset = dataset.map(
         preprocess_func,
