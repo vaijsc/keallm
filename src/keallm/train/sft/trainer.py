@@ -152,5 +152,6 @@ class CustomSeq2SeqTrainer(Seq2SeqTrainer):
 
             writer.write("\n".join(res))
         result = get_accuracy(decoded_labels, decoded_preds)
-        with open(output_prediction_file, "w", encoding="utf-8") as writer:
+        print(result)
+        with open(os.path.join(self.args.output_dir, "results.json"), "w", encoding="utf-8") as writer:
             writer.write(json.dumps(result))
