@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES=0,1,3,6,7 python src/train.py --output_dir ./save/sft/metaqa/keallm/lora \
+CUDA_VISIBLE_DEVICES=0,2,4,5,6,7 python src/train.py --output_dir ./save/sft/metaqa/keallm/lora \
                     --stage sft \
                     --hop 1-hop \
                     --model_name_or_path meta-llama/Llama-2-7b-chat-hf \
@@ -18,17 +18,21 @@ CUDA_VISIBLE_DEVICES=0,1,3,6,7 python src/train.py --output_dir ./save/sft/metaq
                     --logging_first_step true \
                     --logging_steps 20 \
                     --bf16 false \
-                    --do_train true \
-                    --do_eval true\
+                    --do_train false \
+                    --do_eval false\
+                    --predict_with_generate true \
+                    --do_predict true \
+                    --top_k 1 \
+                    --max_new_tokens 32 \
                     --learning_rate 1.0e-4 \
                     --warmup_ratio 0.1 \
                     --lr_scheduler_type cosine \
                     --eval_dataset MetaQA_roberta \
                     --ignore_pad_token_for_loss true \
-                    --per_device_eval_batch_size 8 \
+                    --per_device_eval_batch_size 12 \
                     --per_device_train_batch_size 6 \
                     --gradient_accumulation_steps 2\
                     --dataset MetaQA_roberta \
                     --tokenized_path ./tokenized_data/MetaQA/1-hop \
+                    --resume_from_checkpoint ./save/sft/metaqa/keallm/lora
                     # --deepspeed ./ds2.json
-                    # --resume_from_checkpoint true\
