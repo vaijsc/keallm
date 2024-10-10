@@ -8,7 +8,7 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --model_type keallm \
                     --template llama2_keallm \
                     --num_query_tokens 32 \
-                    --train_from_scratch true \
+                    --train_from_scratch false \
                     --num_train_epochs 3 \
                     --save_total_limit 3 \
                     --load_best_model_at_end true\

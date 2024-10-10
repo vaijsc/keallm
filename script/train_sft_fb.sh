@@ -7,7 +7,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,4,5,6,7 python src/train.py --output_dir ./save/sft/f
                     --model_type lorra \
                     --template llama2_keallm \
                     --num_query_tokens 8 \
-                    --train_from_scratch true \
+                    --train_from_scratch false \
                     --num_train_epochs 3 \
                     --save_total_limit 3 \
                     --load_best_model_at_end true\
