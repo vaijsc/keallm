@@ -165,13 +165,15 @@ def load_model(
             model.language_model = get_lora_model(model_args, finetuning_args, model.language_model)
     elif model_args.model_type == "pt":
         model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path, device_map="auto")
-        model = get_pt_model(model_args, finetuning_args, model)
+        # model = get_pt_model(model_args, finetuning_args, model)
         # print(model.active_adapters())
+        model.load_adapter("./save/sft/metaqa/keallm/lora")
     elif model_args.model_type == "lorra":
         model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path, device_map="auto")
         # model = get_lora_model(model_args, finetuning_args, model)
         # if training_args.do_predict:
-        model.load_adapter("./save/sft/metaqa/keallm/lora")
+        # model.load_adapter("./save/sft/metaqa/keallm/lora")
+        model.load_adapter("./save/sft/fb15k237/keallm/lora/checkpoint-35000")
     elif model_args.model_type == "freeze":
         model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path, device_map="auto")
     else:

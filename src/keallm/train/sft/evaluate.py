@@ -70,7 +70,7 @@ def get_accuracy(pred, label):
 
         prediction = prediction.split("\n")
         f1_score, precision_score, recall_score = eval_f1(prediction, answer)
-        f1_list.appendd(f1_score)
+        f1_list.append(f1_score)
         precission_list.append(precision_score)
         recall_list.append(recall_score)
         prediction_str = " ".join(prediction)
