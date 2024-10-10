@@ -7,7 +7,7 @@ CUDA_VISIBLE_DEVICES=0 python src/train.py --output_dir ./save/sft/metaqa/keallm
                     --model_type pt \
                     --template llama2_keallm \
                     --num_query_tokens 32 \
-                    --train_from_scratch true \
+                    --train_from_scratch false \
                     --num_train_epochs 3 \
                     --save_total_limit 3 \
                     --load_best_model_at_end true\
