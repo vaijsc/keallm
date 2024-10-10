@@ -2,13 +2,13 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     src/train.py --output_dir ./save/sft/fb15k237/keallm/keallm_32 \
                     --stage sft \
                     --hop 1-hop \
-                    --model_name_or_path meta-llama/Llama-2-7b-chat-hf \
+                    --model_name_or_path ./save/sft/fb15k237/keallm/keallm_32 \
                     --language_model_path meta-llama/Llama-2-7b-chat-hf \
                     --kge_model_path ledong0110/FB15k-237-KGE-Roberta-Base \
                     --model_type keallm \
                     --template llama2_keallm \
                     --num_query_tokens 32 \
-                    --train_from_scratch true \
+                    --train_from_scratch false \
                     --num_train_epochs 3 \
                     --save_total_limit 3 \
                     --load_best_model_at_end true\
@@ -19,8 +19,12 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --logging_first_step true \
                     --logging_steps 20 \
                     --bf16 true \
-                    --do_train true \
-                    --do_eval true\
+                    --do_train false \
+                    --do_eval false\
+                    --predict_with_generate true \
+                    --do_predict true \
+                    --top_k 1 \
+                    --max_new_tokens 32 \
                     --learning_rate 1.0e-4 \
                     --warmup_ratio 0.1 \
                     --lr_scheduler_type cosine \

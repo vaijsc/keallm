@@ -18,8 +18,11 @@ CUDA_VISIBLE_DEVICES=0,1,3,6,7 python src/train.py --output_dir ./save/sft/fb15k
                     --logging_first_step true \
                     --logging_steps 20 \
                     --bf16 false \
-                    --do_train true \
-                    --do_eval true\
+                    --do_train false \
+                    --do_eval false\
+                    --predict_with_generate true \
+                    --do_predict true \
+                    --top_k 1 \
                     --learning_rate 1.0e-4 \
                     --warmup_ratio 0.1 \
                     --lr_scheduler_type cosine \
