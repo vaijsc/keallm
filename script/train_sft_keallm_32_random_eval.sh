@@ -35,5 +35,5 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --gradient_accumulation_steps 2\
                     --dataset MetaQA_roberta \
                     --tokenized_path ./tokenized_data/MetaQA/1-hop \
-                    --deepspeed ./ds2.json
+                    # --deepspeed ./ds2.json
                     # --resume_from_checkpoint true\
