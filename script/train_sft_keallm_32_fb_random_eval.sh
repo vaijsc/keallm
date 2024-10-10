@@ -2,7 +2,7 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     src/train.py --output_dir ./save/sft/fb15k237/keallm/keallm_32_random \
                     --stage sft \
                     --hop 1-hop \
-                    --model_name_or_path meta-llama/Llama-2-7b-chat-hf \
+                    --model_name_or_path ./save/sft/fb15k237/keallm/keallm_32_random \
                     --language_model_path meta-llama/Llama-2-7b-chat-hf \
                     --kge_model_path ledong0110/FB15k237-Random \
                     --model_type keallm \
@@ -19,10 +19,10 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --logging_first_step true \
                     --logging_steps 20 \
                     --bf16 true \
-                    --do_train true \
-                    --do_eval true\
-                    --predict_with_generate false \
-                    --do_predict false \
+                    --do_train false \
+                    --do_eval false\
+                    --predict_with_generate true \
+                    --do_predict true \
                     --top_k 1 \
                     --max_new_tokens 32 \
                     --learning_rate 1.0e-4 \
@@ -35,5 +35,5 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --gradient_accumulation_steps 2\
                     --dataset FB15k-237_roberta \
                     --tokenized_path ./tokenized_data/FB15k-237 \
-                    --deepspeed ./ds2.json
+                    # --deepspeed ./ds2.json
                     # --resume_from_checkpoint true\
