@@ -326,7 +326,13 @@ def get_dataset_FB15k237_roberta(
                 dataset_module["eval_dataset"] = dataset_dict["validation"]
             
             if "test" in dataset_dict and training_args.do_predict:
-                dataset_module["eval_dataset"] = dataset_dict["test"]
+                dataset_attr = get_quick_data_attr()
+                test_dataset = align_dataset(load_dataset("json", data_files="data/Processed/FB15k-237_roberta/test_dataset.jsonl", split="train"), dataset_attr, data_args, training_args)
+                with training_args.main_process_first(desc="pre-process dataset"):
+                    test_dataset = _get_preprocessed_dataset(
+                        test_dataset, data_args, training_args, stage, template, tokenizer, processor, is_eval=True
+                    )
+                dataset_module["eval_dataset"] = test_dataset
 
             if data_args.streaming:
                 dataset_module = {k: v.to_iterable_dataset() for k, v in dataset_module.items()}
@@ -423,7 +429,13 @@ def get_dataset_MetaQA_roberta(
                 dataset_module["eval_dataset"] = dataset_dict["validation"]
             
             if "test" in dataset_dict and training_args.do_predict:
-                dataset_module["eval_dataset"] = dataset_dict["test"]
+                dataset_attr = get_quick_data_attr()
+                test_dataset = align_dataset(load_dataset("json", data_files=f"data/Processed/MetaQA_roberta/{data_args.hop}/test_dataset.jsonl", split="train"), dataset_attr, data_args, training_args)
+                with training_args.main_process_first(desc="pre-process dataset"):
+                    test_dataset = _get_preprocessed_dataset(
+                        test_dataset, data_args, training_args, stage, template, tokenizer, processor, is_eval=True
+                    )
+                dataset_module["eval_dataset"] = test_dataset
 
             if data_args.streaming:
                 dataset_module = {k: v.to_iterable_dataset() for k, v in dataset_module.items()}

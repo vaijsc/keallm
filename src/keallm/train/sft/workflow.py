@@ -58,11 +58,11 @@ def run_sft(
 
     # Metric utils
     metric_module = {}
-    if training_args.predict_with_generate:
-        metric_module["compute_metrics"] = ComputeSimilarity(tokenizer=tokenizer)
-    elif finetuning_args.compute_accuracy:
-        metric_module["compute_metrics"] = ComputeAccuracy()
-        metric_module["preprocess_logits_for_metrics"] = eval_logit_processor
+    # if training_args.predict_with_generate:
+    #     metric_module["compute_metrics"] = ComputeSimilarity(tokenizer=tokenizer)
+    # elif finetuning_args.compute_accuracy:
+    #     metric_module["compute_metrics"] = ComputeAccuracy()
+    #     metric_module["preprocess_logits_for_metrics"] = eval_logit_processor
 
     # Initialize our Trainer
     trainer = CustomSeq2SeqTrainer(

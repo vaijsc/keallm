@@ -29,7 +29,7 @@ from ...extras.constants import IGNORE_INDEX
 from ...extras.logging import get_logger
 from ..callbacks import PissaConvertCallback, SaveProcessorCallback
 from ..trainer_utils import create_custom_optimizer, create_custom_scheduler
-
+from .evaluate import get_accuracy
 
 if TYPE_CHECKING:
     from torch.utils.data import Dataset
@@ -103,7 +103,7 @@ class CustomSeq2SeqTrainer(Seq2SeqTrainer):
             model, inputs, prediction_loss_only=prediction_loss_only, ignore_keys=ignore_keys
         )
         if generated_tokens is not None and self.args.predict_with_generate:
-            generated_tokens[:, :prompt_len] = self.tokenizer.pad_token_id
+            # generated_tokens[:, :prompt_len] = self.tokenizer.pad_token_id
             generated_tokens = generated_tokens.contiguous()
 
         return loss, generated_tokens, labels
@@ -151,3 +151,6 @@ class CustomSeq2SeqTrainer(Seq2SeqTrainer):
                 res.append(json.dumps({"prompt": text, "label": label, "predict": pred}, ensure_ascii=False))
 
             writer.write("\n".join(res))
+        result = get_accuracy(decoded_labels, decoded_preds)
+        with open(output_prediction_file, "w", encoding="utf-8") as writer:
+            writer.write(json.dumps(result))
