@@ -22,7 +22,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,4,5,6,7 python src/train.py --output_dir ./save/sft/f
                     --do_eval false\
                     --predict_with_generate true \
                     --do_predict true \
-                    --top_k 1 \
+                    --top_k 50 \
                     --max_new_tokens 32 \
                     --learning_rate 1.0e-4 \
                     --warmup_ratio 0.1 \
