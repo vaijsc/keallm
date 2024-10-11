@@ -19,7 +19,7 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --logging_first_step true \
                     --logging_steps 20 \
                     --bf16 true \
-                    --do_train false \
+                    --do_train true \
                     --do_eval false\
                     --predict_with_generate true \
                     --do_predict true \
