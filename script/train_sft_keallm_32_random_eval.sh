@@ -1,14 +1,14 @@
 CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --master_addr 127.0.0.1 --master_port 23956\
-                    src/train.py --output_dir ./save/sft/metaqa/keallm/keallm_32_random \
+                    src/train.py --output_dir ./save/sft/metaqa/keallm/keallm_32_random2 \
                     --stage sft \
                     --hop 1-hop \
-                    --model_name_or_path ./save/sft/metaqa/keallm/keallm_32_random  \
+                    --model_name_or_path meta-llama/Llama-2-7b-chat-hf  \
                     --language_model_path meta-llama/Llama-2-7b-chat-hf \
-                    --kge_model_path ledong0110/MetaQA-Random \
+                    --kge_model_path ledong0110/MetaQA-Total-Random \
                     --model_type keallm \
                     --template llama2_keallm \
                     --num_query_tokens 32 \
-                    --train_from_scratch false \
+                    --train_from_scratch true \
                     --num_train_epochs 3 \
                     --save_total_limit 3 \
                     --load_best_model_at_end true\
@@ -19,7 +19,7 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --logging_first_step true \
                     --logging_steps 20 \
                     --bf16 true \
-                    --do_train false \
+                    --do_train true \
                     --do_eval false\
                     --predict_with_generate true \
                     --do_predict true \
@@ -35,5 +35,5 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --gradient_accumulation_steps 2\
                     --dataset MetaQA_roberta \
                     --tokenized_path ./tokenized_data/MetaQA/1-hop \
-                    # --deepspeed ./ds2.json
+                    --deepspeed ./ds2.json
                     # --resume_from_checkpoint true\
