@@ -30,8 +30,8 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --lr_scheduler_type cosine \
                     --eval_dataset FB15k-237_roberta \
                     --ignore_pad_token_for_loss true \
-                    --per_device_eval_batch_size 10 \
-                    --per_device_train_batch_size 3 \
+                    --per_device_eval_batch_size 2 \
+                    --per_device_train_batch_size 1 \
                     --gradient_accumulation_steps 2\
                     --dataset FB15k-237_roberta \
                     --tokenized_path ./tokenized_data/FB15k-237 \
@@ -70,8 +70,8 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --lr_scheduler_type cosine \
                     --eval_dataset FB15k-237_roberta \
                     --ignore_pad_token_for_loss true \
-                    --per_device_eval_batch_size 10 \
-                    --per_device_train_batch_size 3 \
+                    --per_device_eval_batch_size 2 \
+                    --per_device_train_batch_size 1 \
                     --gradient_accumulation_steps 2\
                     --dataset FB15k-237_roberta \
                     --tokenized_path ./tokenized_data/FB15k-237 \
