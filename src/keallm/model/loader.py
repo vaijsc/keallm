@@ -173,11 +173,11 @@ def load_model(
         else:
             model = get_pt_model(model_args, finetuning_args, model)
     elif model_args.model_type == "lorra":
-        model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path, device_map="auto")
-        # model = get_lora_model(model_args, finetuning_args, model)
+        model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path)
+        model = get_lora_model(model_args, finetuning_args, model)
         # if training_args.do_predict:
         # model.load_adapter("./save/sft/metaqa/keallm/lora")
-        model.load_adapter("./save/sft/fb15k237/keallm/lora")
+        # model.load_adapter("./save/sft/fb15k237/keallm/lora")
     elif model_args.model_type == "freeze":
         model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path, device_map="auto")
     else:
