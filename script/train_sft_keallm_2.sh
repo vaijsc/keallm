@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --master_addr 127.0.0.1 --master_port 23956\
+CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --master_addr 127.0.0.1 --master_port 23932\
                     src/train.py --output_dir ./save/sft/metaqa/keallm/keallm_2 \
                     --stage sft \
                     --hop 1-hop \
