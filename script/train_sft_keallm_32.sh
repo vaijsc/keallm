@@ -23,7 +23,7 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --do_eval false\
                     --predict_with_generate true \
                     --do_predict true \
-                    --top_k 1 \
+                    --top_k 50 \
                     --max_new_tokens 32 \
                     --learning_rate 1.0e-4 \
                     --warmup_ratio 0.1 \
