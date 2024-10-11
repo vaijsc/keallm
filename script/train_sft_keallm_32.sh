@@ -1,5 +1,5 @@
 CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --master_addr 127.0.0.1 --master_port 23956\
-                    src/train.py --output_dir ./save/sft/metaqa/keallm/keallm_32 \
+                    src/train.py --output_dir ./save/sft/metaqa/keallm/keallm_32_rerun \
                     --stage sft \
                     --hop 1-hop \
                     --model_name_or_path meta-llama/Llama-2-7b-chat-hf  \
@@ -20,9 +20,9 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --logging_steps 20 \
                     --bf16 true \
                     --do_train true \
-                    --do_eval false\
-                    --predict_with_generate true \
-                    --do_predict true \
+                    --do_eval true\
+                    --predict_with_generate false \
+                    --do_predict false \
                     --top_k 50 \
                     --max_new_tokens 32 \
                     --learning_rate 1.0e-4 \
@@ -35,5 +35,5 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --gradient_accumulation_steps 2\
                     --dataset MetaQA_roberta \
                     --tokenized_path ./tokenized_data/MetaQA/1-hop \
-                    # --deepspeed ./ds2.json
+                    --deepspeed ./ds2.json
                     # --resume_from_checkpoint true\
