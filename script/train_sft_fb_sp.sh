@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --master_addr 127.0.0.1 --master_port 23956\
+CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --master_addr 127.0.0.1 --master_port 23756\
                    src/train.py --output_dir ./save/sft/fb15k237/keallm/lora \
                     --stage sft \
                     --hop 1-hop \
@@ -38,7 +38,7 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --deepspeed ./ds2.json
                     # --resume_from_checkpoint true\
 
-CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --master_addr 127.0.0.1 --master_port 23956\
+CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --master_addr 127.0.0.1 --master_port 23756\
                    src/train.py --output_dir ./save/sft/fb15k237/keallm/lora \
                     --stage sft \
                     --hop 1-hop \
