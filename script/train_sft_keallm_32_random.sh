@@ -1,10 +1,10 @@
 CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --master_addr 127.0.0.1 --master_port 23956\
-                    src/train.py --output_dir ./save/sft/metaqa/keallm/keallm_32_random2 \
+                    src/train.py --output_dir ./save/sft/metaqa/keallm/keallm_32_fullrerun \
                     --stage sft \
                     --hop 1-hop \
                     --model_name_or_path meta-llama/Llama-2-7b-chat-hf  \
                     --language_model_path meta-llama/Llama-2-7b-chat-hf \
-                    --kge_model_path ledong0110/MetaQA-Total-Random \
+                    --kge_model_path ledong0110/MetaQA-Roberta-Base-2 \
                     --model_type keallm \
                     --template llama2_keallm \
                     --num_query_tokens 32 \
