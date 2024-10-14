@@ -9,7 +9,7 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --template llama2_keallm \
                     --num_query_tokens 2 \
                     --train_from_scratch true \
-                    --num_train_epochs 10 \
+                    --num_train_epochs 8 \
                     --save_total_limit 3 \
                     --load_best_model_at_end true\
                     --eval_strategy steps \
@@ -34,8 +34,8 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --per_device_train_batch_size 1 \
                     --gradient_accumulation_steps 2\
                     --dataset MetaQA_roberta \
-                    --tokenized_path ./tokenized_data/MetaQA/1-hop
-                    # --deepspeed ./ds2.json
+                    --tokenized_path ./tokenized_data/MetaQA/1-hop \
+                    --deepspeed ./ds2.json
                     # --resume_from_checkpoint true\
 CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --master_addr 127.0.0.1 --master_port 26932\
                     src/train.py --output_dir ./save/sft/metaqa/keallm/keallm_2 \
@@ -48,7 +48,7 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --template llama2_keallm \
                     --num_query_tokens 2 \
                     --train_from_scratch true \
-                    --num_train_epochs 10 \
+                    --num_train_epochs 8 \
                     --save_total_limit 3 \
                     --load_best_model_at_end true\
                     --eval_strategy steps \
@@ -73,5 +73,5 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --per_device_train_batch_size 1 \
                     --gradient_accumulation_steps 2\
                     --dataset MetaQA_roberta \
-                    --tokenized_path ./tokenized_data/MetaQA/1-hop
-                    # --deepspeed ./ds2.json
+                    --tokenized_path ./tokenized_data/MetaQA/1-hop \
+                    --deepspeed ./ds2.json
