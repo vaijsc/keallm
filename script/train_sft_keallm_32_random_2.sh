@@ -1,15 +1,15 @@
 CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --master_addr 127.0.0.1 --master_port 25756\
-                    src/train.py --output_dir ./save/sft/metaqa/keallm/keallm_32_random \
+                    src/train.py --output_dir ./save/sft/metaqa/keallm/keallm_32_random2 \
                     --stage sft \
                     --hop 1-hop \
                     --model_name_or_path meta-llama/Llama-2-7b-chat-hf  \
                     --language_model_path meta-llama/Llama-2-7b-chat-hf \
-                    --kge_model_path ledong0110/MetaQA-Roberta-Base-2 \
+                    --kge_model_path ledong0110/MetaQA-Total-Random \
                     --model_type keallm \
                     --template llama2_keallm \
                     --num_query_tokens 32 \
                     --train_from_scratch true \
-                    --num_train_epochs 10 \
+                    --num_train_epochs 8 \
                     --save_total_limit 3 \
                     --load_best_model_at_end true\
                     --eval_strategy steps \
@@ -44,12 +44,12 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --hop 1-hop \
                     --model_name_or_path meta-llama/Llama-2-7b-chat-hf  \
                     --language_model_path meta-llama/Llama-2-7b-chat-hf \
-                    --kge_model_path ledong0110/MetaQA-Roberta-Base-2 \
+                    --kge_model_path ledong0110/MetaQA-Total-Random \
                     --model_type keallm \
                     --template llama2_keallm \
                     --num_query_tokens 32 \
                     --train_from_scratch true \
-                    --num_train_epochs 10 \
+                    --num_train_epochs 8 \
                     --save_total_limit 3 \
                     --load_best_model_at_end true\
                     --eval_strategy steps \
