@@ -34,8 +34,8 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --per_device_train_batch_size 1 \
                     --gradient_accumulation_steps 2\
                     --dataset MetaQA_roberta \
-                    --tokenized_path ./tokenized_data/MetaQA/1-hop
-                    # --deepspeed ./ds2.json
+                    --tokenized_path ./tokenized_data/MetaQA/1-hop \
+                    --deepspeed ./ds2.json
                     # --resume_from_checkpoint true\
 
 CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --master_addr 127.0.0.1 --master_port 23956\
@@ -74,4 +74,5 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nnodes 1 --node_rank 0 --nproc_per_node 1  --m
                     --per_device_train_batch_size 1 \
                     --gradient_accumulation_steps 2\
                     --dataset MetaQA_roberta \
-                    --tokenized_path ./tokenized_data/MetaQA/1-hop
+                    --tokenized_path ./tokenized_data/MetaQA/1-hop \
+                    --deepspeed ./ds2.json
