@@ -1,5 +1,6 @@
 import re
 import json
+import pandas as pd
 import os
 from tqdm import tqdm
 # h_rt = {}
@@ -83,5 +84,50 @@ def step_one():
     with open(f"test.tsv", "w") as f:
         f.write("\n".join(sample[130000:]) + '\n')
 
+def step_one_further():
+    # dataset = load_dataset("rmanluo/RoG-webqsp")
+    # dataset = load_from_disk("./MetaQA")
+    # dataset = concatenate_datasets([dataset['train'], dataset['validation'], dataset['test']])
+    # with open("./kb.txt") as f:
+    #     dataset = f.read().split("\n")[:-1]
+    with open("./entity2text.txt") as f:
+        entity2text = f.read().split("\n")[:-1]
+    for idx in range(len(entity2text)):
+       
+        entity2text[idx] = entity2text[idx].split("\t")[1]
+    
+    with open("./relation2text.txt") as f:
+        relation2text = f.read().split("\n")[:-1]
+    for idx in range(len(relation2text)):
+      
+        relation2text[idx] = relation2text[idx].split("\t")[1]
+    
+    dataset = pd.read_json("./1-hop/test.json", lines=True)
+    
+    sample = []
+    for i in tqdm(range(len(dataset))):
+        triplets = dataset['triples'][i]
+        for triplet in triplets:
+            
+            h, r, t = triplet['h'], triplet['r'], triplet['t']
+            if '[inverse]' in r:
+                r = r.replace(" [inverse]", "")
+                tmp = h
+                h = t
+                t = tmp
+            h = entity2text.index(h)
+            r = relation2text.index(r.replace("_", " "))
+            t = entity2text.index(t)
+            sp = f"{h}\t{r}\t{t}"
+            sample.append(sp)
+    # import random
+    # random.shuffle(sample)
+    # with open(f"train.tsv", "w") as f:
+    #     f.write("\n".join(sample[:129000]) + '\n')
+    # with open(f"dev.tsv", "w") as f:
+    #     f.write("\n".join(sample[129000:130000]) + '\n')
+    with open(f"test.tsv", "w") as f:
+        f.write("\n".join(sample) + '\n')
+
 if __name__ == "__main__":
-    step_one()
+    step_one_further()
