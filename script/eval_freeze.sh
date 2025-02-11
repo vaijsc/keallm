@@ -17,7 +17,7 @@ CUDA_VISIBLE_DEVICES=0,4,5,6,7 python src/train.py --output_dir ./save/sft/metaq
                     --eval_steps 5000 \
                     --logging_first_step true \
                     --logging_steps 20 \
-                    --bf16 false \
+                    --bf16 true \
                     --do_train false \
                     --predict_with_generate true \
                     --do_predict true \
